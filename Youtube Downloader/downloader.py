@@ -11,11 +11,30 @@ class Downloader(object):
     
     options = ["A", "a", "B", "b"]
     standard = r"[^a-zA-Z0-9\s:]"
-    __init__ = lambda self: self.selector()
+    __init__ = lambda self: self.selector(None)
 
-    def selector(self, indicator = None):
+    def selector(self, indicator = 0):
 
-        if (self.Format == "audio"):
+        if (indicator == None):
+
+            Format = input("What type of content are you downloading: \n\nA: audio \nB: video \n\n")
+
+            if ((Format == "a") | (Format == "A")):
+                self.Format = "audio"
+            elif ((Format == "b") | (Format == "B")):
+                self.Format = "video"
+
+            else:
+
+                while Format not in self.options:
+                    Format = input("Invalid entry, please select an available file type: \n\nA: audio \nB: video \n\n")
+
+                if ((Format == "a") | (Format == "A")):
+                    self.Format = "audio"
+                elif ((Format == "b") | (Format == "B")):
+                    self.Format = "video"
+
+        elif (self.Format == "audio"):
     
             preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
 
@@ -40,7 +59,7 @@ class Downloader(object):
 
         elif (indicator == "type"):
 
-            Type = input("\nAre you downloading a playlist or a single file: \n\nA: single \nB: playlist \n\n")
+            Type = input("\nAre you downloading a playlist or a single file: \n\nA: single video \nB: playlist \n\n")
 
             if ((Type == "a") | (Type == "A")):
                 Type = "single"
@@ -59,50 +78,13 @@ class Downloader(object):
 
             return Type
 
-        else:
-
-            Format = input("What type of content are you downloading: \n\nA: audio \nB: video \n\n")
-
-            if ((Format == "a") | (Format == "A")):
-                self.Format = "audio"
-            elif ((Format == "b") | (Format == "B")):
-                self.Format = "video"
-
-            else:
-
-                while Format not in self.options:
-                    Format = input("Invalid entry, please select an available file type: \n\nA: audio \nB: video \n\n")
-
-                if ((Format == "a") | (Format == "A")):
-                    self.Format = "audio"
-                elif ((Format == "b") | (Format == "B")):
-                    self.Format = "video"
-
 
     def search(self):
         
-        position, best = 0, 0
-
         if (self.Format == "audio"):
 
-            tag = input("\nWhat category of audio are you downloading? (podcast, audiobook, lecture etc): ")
-            channel = self.selector()
-            title = input("\nPlease input a search request for the required file: ")
-            results = YoutubeSearch(title, max_results = 20).to_dict()
-            link = ["https://www.youtube.com" + result['url_suffix'] for result in results]
-            label = [result['title'] for result in results]
-            channels = [result['channel'] for result in results] if (channel != None) else []
-
-            for index in range(len(results)):
-
-                title_score = fw.ratio(title.lower(), label[index].lower())
-                channel_score = fw.ratio(channel.lower(), channels[index].lower()) if (channel != None) else 0
-                score = title_score + channel_score
-                best = score if (score > best) else best
-                position += 1 if (score > best) else 0
-            
-            position -= 1 if (position > 0) else position
-            self.url = link[position]
+            tag, link, title, label, channel, source = self.extractor()
+            self.link_selector(link, title, label, channel, source)
             data = ytdl.YoutubeDL().extract_info(url = self.url, download = False)
             name = f"{data['title']}"
             name = self.slugify(name)
@@ -113,19 +95,80 @@ class Downloader(object):
                              "postprocessors": [{"key": "FFmpegExtractAudio", 
                                                  "preferredcodec": "mp3", 
                                                  "preferredquality": "192"}]}
+            with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
+            self.directory_manager(tag, filename)
 
-            with ytdl.YoutubeDL(configuration) as file:
-                file.download([data["webpage_url"]])
-                
-            current_directory = os.getcwd()
-            components = re.split(self.standard, current_directory)
-            Name = components[0:3]
-            user = "\\".join(Name)
-            path = "{}\\Documents".format(user)
-            os.chdir(path)
-            os.makedirs(tag) if (os.path.isdir(tag) == False) else None
+        elif (self.Format == "video"):
+
+            tag, link, title, label, channel, source = self.extractor()
+            self.link_selector(link, title, label, channel, source)
+            data = ytdl.YoutubeDL().extract_info(url = self.url, download = True)
+            configuration = {"format": "136", "keepvideo": True}
+            current_directory, directory = self.directory_manager(tag)
+            with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
+            self.delete_copy(current_directory, directory)
+
+
+    def directory_manager(self, tag, filename = None):
+
+        current_directory = os.getcwd()
+        component = re.split(self.standard, current_directory)
+        Name = component[0:3]
+        user = "\\".join(Name)
+        path = "{}\\Documents".format(user)
+        os.chdir(path)
+        os.makedirs(tag) if (os.path.isdir(tag) == False) else None
+        directory = "{}\\{}".format(path, tag)
+
+        if (self.Format == "audio"):
             os.chdir(current_directory)
-            shutil.move(filename, r"{}\\{}".format(path, tag))
+            shutil.move(filename, directory)
+        elif (self.Format == "video"):
+            os.chdir(directory)
+            return current_directory, directory
+
+
+    def delete_copy(self, current_directory, directory):
+
+        reference = os.listdir(directory)
+        compare = os.listdir(current_directory)
+        holder = [element.split(".")[0] for element in reference]
+
+        for item in compare:
+
+            File = item.split(".")[0]
+            Data = os.path.join(current_directory, item)
+            os.remove(Data) if File in holder else None
+
+
+    def link_selector(self, link, title, label, channel, source):
+
+        position, best = 0, 0
+        size = len(link)
+
+        for index in range(size):
+            
+            title_score = fw.ratio(title.lower(), label[index].lower())
+            channel_score = fw.ratio(channel.lower(), source[index].lower()) if (channel != None) else 0
+            score = title_score + channel_score
+            position += 1 if (score > best) else 0
+            best = score if (score > best) else best
+
+        position -= 1 if (position > 0) else 0
+        self.url = link[position]
+
+
+    def extractor(self):
+
+        if (self.Format == "audio"):
+
+            tag = input("\nWhat category of audio are you downloading? (podcast, audiobook, lecture etc): ")
+            channel = self.selector()
+            title = input("\nPlease input a search request for the required file: ")
+            results = YoutubeSearch(title, max_results = 20).to_dict()
+            link = ["https://www.youtube.com" + result['url_suffix'] for result in results]
+            label = [result['title'] for result in results]
+            source = [result['channel'] for result in results] if (channel != None) else []
 
         elif (self.Format == "video"):
 
@@ -135,59 +178,31 @@ class Downloader(object):
             title = input("\nPlease input a search request for the required file: ")
 
             if (Type == "single"):
+
                 results = YoutubeSearch(title, max_results = 20).to_dict()
                 link = ["https://www.youtube.com" + result['url_suffix'] for result in results]
                 label = [result['title'] for result in results]
-                channels = [result['channel'] for result in results]
+                source = [result['channel'] for result in results]
+
             elif (Type == "playlist"):
+
                 results = playlist_search(title, limit = 20).result()["result"]
                 link = [result["link"] for result in results]
                 label = [result["title"] for result in results]
-                channels = [result["channel"]["name"] for result in results]
+                source = [result["channel"]["name"] for result in results]
 
-            for index in range(len(results)):
-                
-                title_score = fw.ratio(title.lower(), label[index].lower())
-                channel_score = fw.ratio(channel.lower(), channels[index].lower())
-                score = title_score + channel_score
-                best = score if (score > best) else best
-                position += 1 if (score > best) else 0
-
-            position -= 1 if (position > 0) else 0
-            self.url = link[position]
-            data = ytdl.YoutubeDL().extract_info(url = self.url, download = True)
-            configuration = {"format": "136", "keepvideo": True}
-            current_directory = os.getcwd()
-            components = re.split(self.standard, current_directory)
-            Name = components[0:3]
-            user = "\\".join(Name)
-            path = "{}\\Documents".format(user)
-            os.chdir(path)
-            os.makedirs(tag) if (os.path.isdir(tag) == False) else None
-            directory = r"{}\\{}".format(path, tag)
-            os.chdir(directory)
-
-            with ytdl.YoutubeDL(configuration) as file:
-                file.download([data["webpage_url"]])
-    
-            reference = os.listdir(directory)
-            compare = os.listdir(current_directory)
-            holder = [element.split(".")[0] for element in reference]
-
-            for item in compare:
-
-                File = item.split(".")[0]
-                Data = os.path.join(current_directory, item)
-                os.remove(Data) if File in holder else None
+        return tag, link, title, label, channel, source
 
 
     def slugify(self, value):
 
         name = ucd.normalize("NFKD", value).encode("ascii", "ignore")
-        name = str(re.sub("[^\w\s-]", "", name.decode()).strip().lower())
-        name = str(re.sub("[-\s]+", "-", name))
+        name = str(re.sub("[^\\w\\s-]", "", name.decode()).strip().lower())
+        name = str(re.sub("[-\\s]+", "-", name))
 
         return name
+
+
 
 
 if __name__ == "__main__":
