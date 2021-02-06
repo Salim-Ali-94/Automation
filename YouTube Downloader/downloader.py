@@ -93,11 +93,11 @@ class Downloader(object):
             name = f"{data['title']}"
             name = self.slugify(name)
             filename = f"{name}.mp3"
-            configuration = {"format": "bestaudio/best", 
-                             "keepvideo": False, 
-                             "outtmpl": filename, 
-                             "postprocessors": [{"key": "FFmpegExtractAudio", 
-                                                 "preferredcodec": "mp3", 
+            configuration = {"format": "bestaudio/best",
+                             "keepvideo": False,
+                             "outtmpl": filename,
+                             "postprocessors": [{"key": "FFmpegExtractAudio",
+                                                 "preferredcodec": "mp3",
                                                  "preferredquality": "192"}]}
             with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
             self.directory_manager(tag, filename)
@@ -169,31 +169,31 @@ class Downloader(object):
             tag = input("\nWhat category of audio are you downloading? (podcast, audiobook etc): ")
             channel = self.selector()
             title = input("\nPlease input a search request for the required file: ")
-            results = YoutubeSearch(title, max_results = 20).to_dict()
-            link = ["https://www.youtube.com" + result['url_suffix'] for result in results]
-            label = [result['title'] for result in results]
-            source = [result['channel'] for result in results] if (channel != None) else []
+            result = YoutubeSearch(title, max_results = 20).to_dict()
+            link = ["https://www.youtube.com" + result['url_suffix'] for result in result]
+            label = [entry['title'] for entry in result]
+            source = [entry['channel'] for entry in result] if (channel != None) else []
 
         elif (self.Format == "video"):
 
             Type = self.selector("type")
             tag = input("\nWhat category of video are you downloading? (documentary, tutorial, lecture etc): ")
             channel = input("\nWhich channel will you be downloading your content from?: ")
-            title = input("\nPlease input a search request for the required file: ")
+            title = input("\nPlease input a search request for the required file(s): ")
 
             if (Type == "single"):
 
-                results = YoutubeSearch(title, max_results = 20).to_dict()
-                link = ["https://www.youtube.com" + result['url_suffix'] for result in results]
-                label = [result['title'] for result in results]
-                source = [result['channel'] for result in results]
+                result = YoutubeSearch(title, max_results = 20).to_dict()
+                link = ["https://www.youtube.com" + entry['url_suffix'] for entry in result]
+                label = [entry['title'] for entry in result]
+                source = [entry['channel'] for entry in result]
 
             elif (Type == "playlist"):
 
-                results = playlist_search(title, limit = 20).result()["result"]
-                link = [result["link"] for result in results]
-                label = [result["title"] for result in results]
-                source = [result["channel"]["name"] for result in results]
+                result = playlist_search(title, limit = 20).result()["result"]
+                link = [entry["link"] for entry in result]
+                label = [entry["title"] for entry in result]
+                source = [entry["channel"]["name"] for entry in result]
 
         return tag, link, title, label, channel, source
 
