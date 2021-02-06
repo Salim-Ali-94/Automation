@@ -162,7 +162,7 @@ class Downloader(object):
 
         if (self.Format == "audio"):
 
-            tag = input("\nWhat category of audio are you downloading? (podcast, audiobook, lecture etc): ")
+            tag = input("\nWhat category of audio are you downloading? (podcast, audiobook etc): ")
             channel = self.selector()
             title = input("\nPlease input a search request for the required file: ")
             results = YoutubeSearch(title, max_results = 20).to_dict()
