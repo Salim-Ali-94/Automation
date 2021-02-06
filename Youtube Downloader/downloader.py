@@ -192,5 +192,5 @@ class Downloader(object):
 
 if __name__ == "__main__":
     
-    download = dwnld.Downloader()
+    download = Downloader()
     download.search()
