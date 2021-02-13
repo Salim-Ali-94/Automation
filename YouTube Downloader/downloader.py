@@ -107,7 +107,7 @@ class Downloader(object):
             tag, link, title, label, channel, source = self.extractor()
             self.link_selector(link, title, label, channel, source)
             data = ytdl.YoutubeDL().extract_info(url = self.url, download = True)
-            configuration = {"format": "22", "keepvideo": True}
+            configuration = {"format": "18", "keepvideo": True}
             current_directory, directory = self.directory_manager(tag)
             with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
             self.delete_copy(current_directory, directory)
