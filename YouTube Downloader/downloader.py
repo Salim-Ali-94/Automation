@@ -73,7 +73,7 @@ class Downloader(object):
             else:
 
                 while Type not in self.options:
-                    Type = input("Invalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
+                    Type = input("Invalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
 
                 if Type in self.options[0:2]:
                     Type = "single"
