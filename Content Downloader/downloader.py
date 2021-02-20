@@ -153,6 +153,7 @@ class Downloader(object):
             URL = "https://readcomiconline.to/Search/Comic"
             tag = input("\nWhich comic book series are you downloading? (Civil War, Suprior Iron-Man, Avengers etc): ")
             title = input("\nPlease input a search request for the required comic book(s): ")
+            self.directory_manager(tag)
             self.driver.get(URL)
             search = self.driver.find_element_by_tag_name("input")
             search.send_keys(title)
@@ -165,18 +166,17 @@ class Downloader(object):
             book = self.url.text
             click = self.driver.find_element_by_link_text(book)
             click.click()
-            self.advert_handler()
-            issues = self.driver.find_elements_by_tag_name("td a")
-            issues = list(reversed(issues))
-            self.directory_manager(tag)
 
             if (Type == "single"):
 
+                self.advert_handler()
+                issues = self.driver.find_elements_by_tag_name("td a")
+                issues = list(reversed(issues))
                 number = int(input("\nWhich issue are you downloading from the selected comic book series?: "))
 
                 if (type(number) != int):
                     while (type(number) != int):
-                        number = int(input("\nInvalid entry, please specify/input an integer value for the selected comic book series?: "))
+                        number = int(input("\nInvalid entry, please specify an integer value for the selected comic book series?: "))
 
                 click = self.driver.find_element_by_link_text(issues[number - 1].text)
                 click.click()
@@ -197,6 +197,7 @@ class Downloader(object):
 
                 for index in range(size):
 
+                    self.advert_handler()
                     issues = self.driver.find_elements_by_tag_name("td a")
                     issue = list(reversed(issues))[index]
                     click = self.driver.find_element_by_link_text(issue.text)
@@ -204,7 +205,6 @@ class Downloader(object):
                     images = self.save_images()
                     self.download_images(images)
                     self.driver.get(webpage)
-                    self.advert_handler()
                     self.pdf_converter(title, count)
                     path = os.getcwd()
                     count += 1
