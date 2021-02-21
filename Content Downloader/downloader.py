@@ -376,9 +376,9 @@ class Downloader(object):
         path = os.getcwd()
         files = os.listdir(path)
         folder = sorted(files, key = lambda file: int(file.split(".")[0]) if file.endswith(".jpg") else -1)
-        pictures = [file for file in folder if file.endswith(".jpg")]
+        images = [file for file in folder if file.endswith(".jpg")]
         PDF = open("{} {}.pdf".format(name, number), "wb")
-        PDF.write(converter.convert(pictures))
+        PDF.write(converter.convert(images))
         PDF.close()
 
 
