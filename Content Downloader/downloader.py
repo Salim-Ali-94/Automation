@@ -176,7 +176,7 @@ class Downloader(object):
 
                 if (type(number) != int):
                     while (type(number) != int):
-                        number = int(input("\nInvalid entry, please specify an integer value for the selected comic book series?: "))
+                        number = int(input("\nInvalid entry, please specify an integer value for the selected comic book series: "))
 
                 click = self.driver.find_element_by_link_text(issues[number - 1].text)
                 click.click()
