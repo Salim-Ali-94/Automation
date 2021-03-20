@@ -159,10 +159,10 @@ class Downloader(object):
             search.send_keys(title)
             search.send_keys(Keys.ENTER)
             self.advert_handler()
-            comics = self.driver.find_elements_by_tag_name("td")
-            site = [comic.text for comic in comics]
+            site = self.driver.find_elements_by_tag_name("td")
+            comics = [comic.text for comic in site]
             channel, source = None, None
-            self.link_selector(comics, title, site, channel, source)
+            self.link_selector(site, title, comics, channel, source)
             book = self.url.text
             click = self.driver.find_element_by_link_text(book)
             click.click()
