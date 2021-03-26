@@ -1,12 +1,16 @@
 import shutil
-import os, re
+import os, re, sys
 import requests
+import random
+import warnings
 import unicodedata as ucd
 import youtube_dl as ytdl
 import img2pdf as converter
 from bs4 import BeautifulSoup
 from selenium import webdriver
+sys.stderr = open(os.devnull, "w")
 from fuzzywuzzy import fuzz as fw
+sys.stderr = sys.__stderr__
 from youtube_search import YoutubeSearch
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
@@ -21,9 +25,9 @@ class Downloader(object):
     def __init__(self, driver_folder):
 
         self.selector(None)
-        options = webdriver.ChromeOptions()
-        options.headless = True
-        self.driver = webdriver.Chrome(executable_path = driver_folder, options = options)
+        settings = webdriver.ChromeOptions()
+        settings.headless = True
+        self.driver = webdriver.Chrome(executable_path = driver_folder, options = settings)
         self.driver.implicitly_wait(30)
 
 
@@ -31,7 +35,7 @@ class Downloader(object):
 
         if (indicator == None):
 
-            Format = input("What type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \n\n")
+            Format = input("\n\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \n\n")
 
             if Format in self.options[0:2]:
                 self.Format = "audio"
@@ -71,7 +75,7 @@ class Downloader(object):
                 elif preference in self.options[2:4]:
                     channel = None
 
-            channel = input("\nPlease enter a channel to search for your content: \n\n") if (preference == "yes") else None
+            channel = input("\nPlease enter a channel to search for your content: ") if (preference == "yes") else None
 
             return channel
 
@@ -127,14 +131,17 @@ class Downloader(object):
             data = ytdl.YoutubeDL().extract_info(url = self.url, download = False)
             name = f"{data['title']}"
             name = self.slugify(name)
-            filename = f"{name}.mp3"
+            filename = f"{name}.%(ext)s"
+
             configuration = {"format": "bestaudio/best",
                              "keepvideo": False,
                              "outtmpl": filename,
                              "postprocessors": [{"key": "FFmpegExtractAudio",
                                                  "preferredcodec": "mp3",
                                                  "preferredquality": "192"}]}
+
             with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
+            filename = filename.split(".")[0] + ".mp3"
             self.directory_manager(tag, filename)
 
         elif (self.Format == "video"):
@@ -151,7 +158,7 @@ class Downloader(object):
 
             Type = self.selector()
             URL = "https://readcomiconline.to/Search/Comic"
-            tag = input("\nWhich comic book series are you downloading? (Civil War, Suprior Iron-Man, Avengers etc): ")
+            tag = input("\nWhich comic book series are you downloading? (Civil War, Superior Iron-Man, Avengers etc): ")
             title = input("\nPlease input a search request for the required comic book(s): ")
             self.directory_manager(tag)
             self.driver.get(URL)
@@ -216,7 +223,7 @@ class Downloader(object):
                 self.driver.quit()
                     
 
-    def directory_manager(self, tag, filename = None):
+    def directory_manager(self, tag, file_name = None):
 
         current_directory = os.getcwd()
         component = re.split(self.standard, current_directory)
@@ -229,7 +236,16 @@ class Downloader(object):
 
         if (self.Format == "audio"):
             os.chdir(current_directory)
-            shutil.move(filename, directory)
+            if file_name not in os.listdir(directory):
+                shutil.move(file_name, directory)
+            else:
+                while file_name in os.listdir(directory):
+                    File_name = file_name.split(".")[0] 
+                    File_name += " ({})".format(random.randint(0, 100))
+                    File_name += ".mp3"
+                    file_name = File_name
+                os.rename(file_name, File_name)
+                shutil.move(File_name, directory)
         elif (self.Format == "video"):
             os.chdir(directory)
             return current_directory, directory
@@ -376,9 +392,9 @@ class Downloader(object):
         path = os.getcwd()
         files = os.listdir(path)
         folder = sorted(files, key = lambda file: int(file.split(".")[0]) if file.endswith(".jpg") else -1)
-        images = [file for file in folder if file.endswith(".jpg")]
+        pictures = [file for file in folder if file.endswith(".jpg")]
         PDF = open("{} {}.pdf".format(name, number), "wb")
-        PDF.write(converter.convert(images))
+        PDF.write(converter.convert(pictures))
         PDF.close()
 
 
