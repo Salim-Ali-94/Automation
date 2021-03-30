@@ -35,6 +35,7 @@ class Downloader(object):
 
         if (indicator == None):
 
+            os.system("cls")
             Format = input("\n\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \n\n")
 
             if Format in self.options[0:2]:
@@ -47,6 +48,7 @@ class Downloader(object):
             else:
 
                 while Format not in self.options:
+                    os.system("cls")
                     Format = input("Invalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \n\n")
 
                 if Format in self.options[0:2]:
@@ -57,7 +59,8 @@ class Downloader(object):
                     self.Format = "comic book"
 
         elif (self.Format == "audio"):
-    
+
+            os.system("cls")
             preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
 
             if preference in self.options[0:2]:
@@ -68,6 +71,7 @@ class Downloader(object):
             else:
 
                 while preference not in self.options[0:4]:
+                    os.system("cls")
                     preference = input("Invalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
                 if preference in self.options[0:2]:
@@ -75,12 +79,14 @@ class Downloader(object):
                 elif preference in self.options[2:4]:
                     channel = None
 
+            os.system("cls")
             channel = input("\nPlease enter a channel to search for your content: ") if (preference == "yes") else None
 
             return channel
 
         elif (self.Format == "video"):
 
+            os.system("cls")
             Type = input("\nAre you downloading a playlist or a single file: \n\nA: single video \nB: playlist \n\n")
 
             if Type in self.options[0:2]:
@@ -91,6 +97,7 @@ class Downloader(object):
             else:
 
                 while Type not in self.options[0:4]:
+                    os.system("cls")
                     Type = input("Invalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
 
                 if Type in self.options[0:2]:
@@ -102,6 +109,7 @@ class Downloader(object):
 
         elif (self.Format == "comic book"):
 
+            os.system("cls")
             Type = input("\nAre you downloading an entire collection or only a single issue: \n\nA: single issue \nB: collection \n\n")
 
             if Type in self.options[0:2]:
@@ -112,6 +120,7 @@ class Downloader(object):
             else:
 
                 while Type not in self.options[0:4]:
+                    os.system("cls")
                     Type = input("Invalid entry, please select an available option: \n\nA: single issue \nB: collection \n\n")
 
                 if Type in self.options[0:2]:
@@ -158,7 +167,9 @@ class Downloader(object):
 
             Type = self.selector()
             URL = "https://readcomiconline.to/Search/Comic"
-            tag = input("\nWhich comic book series are you downloading? (Civil War, Superior Iron-Man, Avengers etc): ")
+            os.system("cls")
+            tag = input("\nWhich comic book series are you downloading? (Civil War, Secret Wars etc): ")
+            os.system("cls")
             title = input("\nPlease input a search request for the required comic book(s): ")
             self.directory_manager(tag)
             self.driver.get(URL)
@@ -179,10 +190,12 @@ class Downloader(object):
                 self.advert_handler()
                 issues = self.driver.find_elements_by_tag_name("td a")
                 issues = list(reversed(issues))
+                os.system("cls")
                 number = int(input("\nWhich issue are you downloading from the selected comic book series?: "))
 
                 if (type(number) != int):
                     while (type(number) != int):
+                        os.system("cls")
                         number = int(input("\nInvalid entry, please specify an integer value for the selected comic book series: "))
 
                 click = self.driver.find_element_by_link_text(issues[number - 1].text)
@@ -287,8 +300,10 @@ class Downloader(object):
 
         if (self.Format == "audio"):
 
+            os.system("cls")
             tag = input("\nWhat category of audio are you downloading? (podcast, audiobook etc): ")
             channel = self.selector()
+            os.system("cls")
             title = input("\nPlease input a search request for the required file: ")
             result = YoutubeSearch(title, max_results = 20).to_dict()
             link = ["https://www.youtube.com" + result['url_suffix'] for result in result]
@@ -298,8 +313,11 @@ class Downloader(object):
         elif (self.Format == "video"):
 
             Type = self.selector()
-            tag = input("\nWhat category of video are you downloading? (documentary, tutorial, lecture etc): ")
+            os.system("cls")
+            tag = input("\nWhat category of video are you downloading? (tutorial, lecture etc): ")
+            os.system("cls")
             channel = input("\nWhich channel will you be downloading your content from?: ")
+            os.system("cls")
             title = input("\nPlease input a search request for the required file(s): ")
 
             if (Type == "single"):
@@ -322,7 +340,8 @@ class Downloader(object):
     def slugify(self, value):
 
         name = ucd.normalize("NFKD", value).encode("ascii", "ignore")
-        name = str(re.sub("[^\\w\\s-]", "", name.decode()).strip().lower())
+        name = re.sub("[^\\w\\s-]", "", name.decode())
+        name = str(name.strip().lower())
         name = str(re.sub("[-\\s]+", "-", name))
 
         return name
@@ -405,3 +424,5 @@ if __name__ == "__main__":
     path = "C:\\chrome_driver\\chromedriver"
     download = Downloader(path)
     download.search()
+    os.system("cls")
+    print("Download complete\n")
