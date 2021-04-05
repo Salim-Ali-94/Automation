@@ -36,7 +36,7 @@ class Downloader(object):
         if (indicator == None):
 
             os.system("cls")
-            Format = input("\n\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \n\n")
+            Format = input("\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \n\n")
 
             if Format in self.options[0:2]:
                 self.Format = "audio"
