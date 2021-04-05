@@ -184,11 +184,11 @@ class Downloader(object):
             book = self.url.text
             click = self.driver.find_element_by_link_text(book)
             click.click()
+            self.advert_handler()
+            issues = self.driver.find_elements_by_tag_name("td a")
 
             if (Type == "single"):
 
-                self.advert_handler()
-                issues = self.driver.find_elements_by_tag_name("td a")
                 issues = list(reversed(issues))
                 os.system("cls")
                 number = int(input("\nWhich issue are you downloading from the selected comic book series?: "))
@@ -375,7 +375,7 @@ class Downloader(object):
         website = str(soup.prettify())
         images = []
 
-        with open("comicbooks_site.txt", "w+") as file:
+        with open("comicbook_site.txt", "w+") as file:
 
             file.write(website)
             file.seek(0)
