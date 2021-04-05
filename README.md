@@ -1,10 +1,5 @@
 # Downloader
 
-
-___________________________________________________________________________________________________________________________________________________________________________________
-___________________________________________________________________________________________________________________________________________________________________________________
-
-
 Description:
 
 The program is a command line script that downloads audio, a single video or an entire playlist from YouTube and comic books (single or batch) in PDF format based on the input search request, it allows the user to specify the desired channel (for audio and video) and also creates a directory under the user's "Documents" folder (Windows 10) in which to store the saved files - the name of the folder is specified by the user under the content category prompt.
