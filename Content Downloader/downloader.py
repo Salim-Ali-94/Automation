@@ -191,7 +191,7 @@ class Downloader(object):
 
                 os.system("cls")
                 issues = list(reversed(issues))
-                number = int(input("\nWhich issue are you downloading from the selected comic book series?: "))
+                number = input("\nWhich issue are you downloading from the selected comic book series?: ")
 
                 if number.isdigit():
                     number = int(number)
