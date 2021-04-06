@@ -168,7 +168,7 @@ class Downloader(object):
             Type = self.selector()
             URL = "https://readcomiconline.to/Search/Comic"
             os.system("cls")
-            tag = input("\nWhich comic book series are you downloading? (Civil War, Secret Wars etc): ")
+            tag = input("\nWhich comic book series are you downloading? (Strange Tales, Secret Wars etc): ")
             os.system("cls")
             title = input("\nPlease input a search request for the required comic book(s): ")
             self.directory_manager(tag)
@@ -186,6 +186,7 @@ class Downloader(object):
             click.click()
             self.advert_handler()
             issues = self.driver.find_elements_by_tag_name("td a")
+            extensions = (".txt", ".jpg")
 
             if (Type == "single"):
 
@@ -208,7 +209,6 @@ class Downloader(object):
                 self.driver.quit()
                 self.pdf_converter(title, number)
                 path = os.getcwd()
-                extensions = (".jpg", ".txt")
 
                 for file in os.listdir(path):
                     if file.endswith(extensions):
@@ -234,7 +234,7 @@ class Downloader(object):
                     count += 1
 
                     for file in os.listdir(path):
-                        if (file.endswith(".jpg") | file.endswith(".txt")):
+                        if file.endswith(extensions):
                             os.remove(file)
 
                 self.driver.quit()
@@ -310,7 +310,7 @@ class Downloader(object):
             os.system("cls")
             title = input("\nPlease input a search request for the required file: ")
             result = YoutubeSearch(title, max_results = 20).to_dict()
-            link = ["https://www.youtube.com" + result['url_suffix'] for result in result]
+            link = ["https://www.youtube.com" + entry['url_suffix'] for entry in result]
             label = [entry['title'] for entry in result]
             source = [entry['channel'] for entry in result] if (channel != None) else []
 
