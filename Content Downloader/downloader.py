@@ -196,15 +196,15 @@ class Downloader(object):
 
                 os.system("cls")
                 issues = list(reversed(issues))
-                number = input("\nWhich issue are you downloading from the selected comic book series?: ")
+                issue = input("\nWhich issue are you downloading from the selected comic book series?: ")
 
-                if number.isdigit():
-                    number = int(number)
+                if issue.isdigit():
+                    issue = int(issue)
                 else:
-                    while not number.isdigit():
+                    while not issue.isdigit():
                         os.system("cls")
-                        number = input("\nInvalid entry, please specify an integer value for the selected comic book series: ")
-                    number = int(number)
+                        issue = input("\nInvalid entry, please specify an integer value for the selected comic book series: ")
+                    issue = int(issue)
 
                 click = self.driver.find_element_by_link_text(issues[number - 1].text)
                 click.click()
@@ -419,9 +419,9 @@ class Downloader(object):
         path = os.getcwd()
         files = os.listdir(path)
         folder = sorted(files, key = lambda file: int(file.split(".")[0]) if file.endswith(".jpg") else -1)
-        pictures = [file for file in folder if file.endswith(".jpg")]
+        images = [file for file in folder if file.endswith(".jpg")]
         PDF = open("{} {}.pdf".format(name, number), "wb")
-        PDF.write(converter.convert(pictures))
+        PDF.write(converter.convert(images))
         PDF.close()
 
 
