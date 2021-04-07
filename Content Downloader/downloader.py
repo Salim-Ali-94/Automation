@@ -166,6 +166,7 @@ class Downloader(object):
         elif (self.Format == "comic book"):
 
             Type = self.selector()
+            extensions = (".txt", ".jpg")
             URL = "https://readcomiconline.to/Search/Comic"
             os.system("cls")
             tag = input("\nWhich comic book series are you downloading? (Strange Tales, Secret Wars etc): ")
@@ -177,16 +178,19 @@ class Downloader(object):
             search.send_keys(title)
             search.send_keys(Keys.ENTER)
             self.advert_handler()
-            site = self.driver.find_elements_by_tag_name("td")
-            comics = [comic.text for comic in site]
-            channel, source = None, None
-            self.link_selector(site, title, comics, channel, source)
-            book = self.url.text
-            click = self.driver.find_element_by_link_text(book)
-            click.click()
-            self.advert_handler()
-            issues = self.driver.find_elements_by_tag_name("td a")
-            extensions = (".txt", ".jpg")
+
+            if (self.driver.current_url[-5:].lower() != "comic"):
+                issues = self.driver.find_elements_by_tag_name("td a")
+            else:
+                site = self.driver.find_elements_by_tag_name("td")
+                comics = [comic.text for comic in site]
+                channel, source = None, None
+                self.link_selector(site, title, comics, channel, source)
+                book = self.url.text
+                click = self.driver.find_element_by_link_text(book)
+                click.click()
+                self.advert_handler()
+                issues = self.driver.find_elements_by_tag_name("td a")
 
             if (Type == "single"):
 
@@ -214,7 +218,7 @@ class Downloader(object):
                     if file.endswith(extensions):
                         os.remove(file)
 
-            elif (Type == "collection"):
+            else:
  
                 webpage = self.driver.current_url
                 size, count = len(issues), 1
