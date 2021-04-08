@@ -3,6 +3,7 @@ import os, re, sys
 import requests
 import random
 import warnings
+import urllib.request
 import unicodedata as ucd
 import youtube_dl as ytdl
 import img2pdf as converter
@@ -22,12 +23,12 @@ class Downloader(object):
     options = ["A", "a", "B", "b", "C", "c"]
     standard = r"[^a-zA-Z0-9\s:]"
 
-    def __init__(self, driver_folder):
+    def __init__(self, driver_path):
 
         self.selector(None)
         settings = webdriver.ChromeOptions()
         settings.headless = True
-        self.driver = webdriver.Chrome(executable_path = driver_folder, options = settings)
+        self.driver = webdriver.Chrome(executable_path = driver_path, options = settings)
         self.driver.implicitly_wait(30)
 
 
@@ -38,11 +39,11 @@ class Downloader(object):
             os.system("cls")
             Format = input("\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \n\n")
 
-            if Format in self.options[0:2]:
+            if (Format.lower() == "a"):
                 self.Format = "audio"
-            elif Format in self.options[2:4]:
+            elif (Format.lower() == "b"):
                 self.Format = "video"
-            elif Format in self.options[4:6]:
+            elif (Format.lower() == "c"):
                 self.Format = "comic book"
 
             else:
@@ -51,11 +52,11 @@ class Downloader(object):
                     os.system("cls")
                     Format = input("Invalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \n\n")
 
-                if Format in self.options[0:2]:
+                if (Format.lower() == "a"):
                     self.Format = "audio"
-                elif Format in self.options[2:4]:
+                elif (Format.lower() == "b"):
                     self.Format = "video"
-                elif Format in self.options[4:6]:
+                elif (Format.lower() == "c"):
                     self.Format = "comic book"
 
         elif (self.Format == "audio"):
@@ -63,9 +64,9 @@ class Downloader(object):
             os.system("cls")
             preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
 
-            if preference in self.options[0:2]:
+            if (preference.lower() == "a"):
                 preference = "yes"
-            elif preference in self.options[2:4]:
+            elif (preference.lower() == "b"):
                 channel = None
 
             else:
@@ -74,9 +75,9 @@ class Downloader(object):
                     os.system("cls")
                     preference = input("Invalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-                if preference in self.options[0:2]:
+                if (preference.lower() == "a"):
                     preference = "yes"
-                elif preference in self.options[2:4]:
+                elif (preference.lower() == "b"):
                     channel = None
 
             os.system("cls")
@@ -89,9 +90,9 @@ class Downloader(object):
             os.system("cls")
             Type = input("\nAre you downloading a playlist or a single file: \n\nA: single video \nB: playlist \n\n")
 
-            if Type in self.options[0:2]:
+            if (Type.lower() == "a"):
                 Type = "single"
-            elif Type in self.options[2:4]:
+            elif (Type.lower() == "b"):
                 Type = "playlist"
 
             else:
@@ -100,9 +101,9 @@ class Downloader(object):
                     os.system("cls")
                     Type = input("Invalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
 
-                if Type in self.options[0:2]:
+                if (Type.lower() == "a"):
                     Type = "single"
-                elif Type in self.options[2:4]:
+                elif (Type.lower() == "b"):
                     Type = "playlist"
 
             return Type
@@ -112,9 +113,9 @@ class Downloader(object):
             os.system("cls")
             Type = input("\nAre you downloading an entire collection or only a single issue: \n\nA: single issue \nB: collection \n\n")
 
-            if Type in self.options[0:2]:
+            if (Type.lower() == "a"):
                 Type = "single"
-            elif Type in self.options[2:4]:
+            elif (Type.lower() == "b"):
                 Type = "collection"
 
             else:
@@ -123,9 +124,9 @@ class Downloader(object):
                     os.system("cls")
                     Type = input("Invalid entry, please select an available option: \n\nA: single issue \nB: collection \n\n")
 
-                if Type in self.options[0:2]:
+                if (Type.lower() == "a"):
                     Type = "single"
-                elif Type in self.options[2:4]:
+                elif (Type.lower() == "b"):
                     Type = "collection"
 
             return Type
@@ -140,18 +141,16 @@ class Downloader(object):
             data = ytdl.YoutubeDL().extract_info(url = self.url, download = False)
             name = f"{data['title']}"
             name = self.slugify(name)
-            filename = f"{name}.%(ext)s"
-
+            File = f"{name}.%(ext)s"
             configuration = {"format": "bestaudio/best",
                              "keepvideo": False,
-                             "outtmpl": filename,
+                             "outtmpl": File,
                              "postprocessors": [{"key": "FFmpegExtractAudio",
                                                  "preferredcodec": "mp3",
                                                  "preferredquality": "192"}]}
-
             with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
-            filename = filename.split(".")[0] + ".mp3"
-            self.directory_manager(tag, filename)
+            File = File.split(".")[0] + ".mp3"
+            self.directory_manager(tag, File)
 
         elif (self.Format == "video"):
 
@@ -159,9 +158,9 @@ class Downloader(object):
             self.link_selector(link, title, label, channel, source)
             data = ytdl.YoutubeDL().extract_info(url = self.url, download = True)
             configuration = {"format": "18", "keepvideo": True}
-            current_directory, directory = self.directory_manager(tag)
+            current_directory, folder = self.directory_manager(tag)
             with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
-            self.delete_copy(current_directory, directory)
+            self.delete_copy(current_directory, folder)
 
         elif (self.Format == "comic book"):
 
@@ -206,7 +205,7 @@ class Downloader(object):
                         issue = input("\nInvalid entry, please specify an integer value for the selected comic book series: ")
                     issue = int(issue)
 
-                click = self.driver.find_element_by_link_text(issues[number - 1].text)
+                click = self.driver.find_element_by_link_text(issues[issue - 1].text)
                 click.click()
                 images = self.save_images()
                 self.download_images(images)
@@ -235,6 +234,7 @@ class Downloader(object):
                     self.driver.get(webpage)
                     self.pdf_converter(title, count)
                     path = os.getcwd()
+                    print("\n\n\n\n", "website thinks you're using:", self.driver.execute_script("return navigator.userAgent;"), "\n\n\n\n")
                     count += 1
 
                     for file in os.listdir(path):
@@ -244,34 +244,45 @@ class Downloader(object):
                 self.driver.quit()
                     
 
-    def directory_manager(self, tag, file_name = None):
+    def directory_manager(self, tag, file = None):
 
         current_directory = os.getcwd()
         component = re.split(self.standard, current_directory)
-        Name = component[0:3]
-        user = "\\".join(Name)
-        path = "{}\\Documents".format(user)
+        name = component[0:3]
+        user = "\\".join(name)
+        path = f"{user}\\Documents"
         os.chdir(path)
         os.makedirs(tag) if (os.path.isdir(tag) == False) else None
-        directory = "{}\\{}".format(path, tag)
+        folder = f"{path}\\{tag}"
 
         if (self.Format == "audio"):
+
             os.chdir(current_directory)
-            if file_name not in os.listdir(directory):
-                shutil.move(file_name, directory)
+
+            if file not in os.listdir(folder):
+
+                shutil.move(file, folder)
+
             else:
-                while file_name in os.listdir(directory):
-                    File_name = file_name.split(".")[0] 
-                    File_name += " ({})".format(random.randint(0, 100))
-                    File_name += ".mp3"
-                    file_name = File_name
-                os.rename(file_name, File_name)
-                shutil.move(File_name, directory)
+
+                while file in os.listdir(folder):
+
+                    audio = file.split(".")[0] 
+                    audio += f" ({random.randint(0, 100)})"
+                    audio += ".mp3"
+                    file = audio
+
+                os.rename(file, audio)
+                shutil.move(audio, folder)
+
         elif (self.Format == "video"):
-            os.chdir(directory)
-            return current_directory, directory
+
+            os.chdir(folder)
+            return current_directory, folder
+
         elif (self.Format == "comic book"):
-            os.chdir(directory)
+
+            os.chdir(folder)
 
 
     def delete_copy(self, current_directory, directory):
@@ -395,8 +406,9 @@ class Downloader(object):
 
                 if (start != -1):
 
-                    src = line[start + 15:end]
-                    images.append(src)
+                    source = line[start + 16:end - 1]
+                    source = source.replace("1600", "3975")
+                    images.append(source)
 
         return images
 
@@ -407,11 +419,8 @@ class Downloader(object):
 
         for image in images:
 
-            with open("{}.jpg".format(counter), "wb") as file:
-
-                site = requests.get(image.strip("\""))
-                file.write(site.content)
-                counter += 1
+            urllib.request.urlretrieve(image, f"{counter}.jpg")
+            counter += 1
 
 
     def pdf_converter(self, name, number):
