@@ -234,7 +234,6 @@ class Downloader(object):
                     self.driver.get(webpage)
                     self.pdf_converter(title, count)
                     path = os.getcwd()
-                    print("\n\n\n\n", "website thinks you're using:", self.driver.execute_script("return navigator.userAgent;"), "\n\n\n\n")
                     count += 1
 
                     for file in os.listdir(path):
