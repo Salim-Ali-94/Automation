@@ -41,8 +41,10 @@ class Downloader(object):
 
             if (Format.lower() == "a"):
                 self.Format = "audio"
+
             elif (Format.lower() == "b"):
                 self.Format = "video"
+
             elif (Format.lower() == "c"):
                 self.Format = "comic book"
 
@@ -54,8 +56,10 @@ class Downloader(object):
 
                 if (Format.lower() == "a"):
                     self.Format = "audio"
+
                 elif (Format.lower() == "b"):
                     self.Format = "video"
+
                 elif (Format.lower() == "c"):
                     self.Format = "comic book"
 
@@ -66,6 +70,7 @@ class Downloader(object):
 
             if (preference.lower() == "a"):
                 preference = "yes"
+
             elif (preference.lower() == "b"):
                 channel = None
 
@@ -77,6 +82,7 @@ class Downloader(object):
 
                 if (preference.lower() == "a"):
                     preference = "yes"
+
                 elif (preference.lower() == "b"):
                     channel = None
 
@@ -92,6 +98,7 @@ class Downloader(object):
 
             if (Type.lower() == "a"):
                 Type = "single"
+
             elif (Type.lower() == "b"):
                 Type = "playlist"
 
@@ -103,6 +110,7 @@ class Downloader(object):
 
                 if (Type.lower() == "a"):
                     Type = "single"
+
                 elif (Type.lower() == "b"):
                     Type = "playlist"
 
@@ -115,6 +123,7 @@ class Downloader(object):
 
             if (Type.lower() == "a"):
                 Type = "single"
+
             elif (Type.lower() == "b"):
                 Type = "collection"
 
@@ -126,6 +135,7 @@ class Downloader(object):
 
                 if (Type.lower() == "a"):
                     Type = "single"
+
                 elif (Type.lower() == "b"):
                     Type = "collection"
 
@@ -142,12 +152,14 @@ class Downloader(object):
             name = f"{data['title']}"
             name = self.slugify(name)
             File = f"{name}.%(ext)s"
+
             configuration = {"format": "bestaudio/best",
                              "keepvideo": False,
                              "outtmpl": File,
                              "postprocessors": [{"key": "FFmpegExtractAudio",
                                                  "preferredcodec": "mp3",
                                                  "preferredquality": "192"}]}
+
             with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
             File = File.split(".")[0] + ".mp3"
             self.directory_manager(tag, File)
@@ -180,7 +192,9 @@ class Downloader(object):
 
             if (self.driver.current_url[-5:].lower() != "comic"):
                 issues = self.driver.find_elements_by_tag_name("td a")
+
             else:
+
                 site = self.driver.find_elements_by_tag_name("td")
                 comics = [comic.text for comic in site]
                 channel, source = None, None
@@ -199,10 +213,13 @@ class Downloader(object):
 
                 if issue.isdigit():
                     issue = int(issue)
+
                 else:
+
                     while not issue.isdigit():
                         os.system("cls")
                         issue = input("\nInvalid entry, please specify an integer value for the selected comic book series: ")
+
                     issue = int(issue)
 
                 click = self.driver.find_element_by_link_text(issues[issue - 1].text)
@@ -214,6 +231,7 @@ class Downloader(object):
                 path = os.getcwd()
 
                 for file in os.listdir(path):
+
                     if file.endswith(extensions):
                         os.remove(file)
 
@@ -237,6 +255,7 @@ class Downloader(object):
                     count += 1
 
                     for file in os.listdir(path):
+
                         if file.endswith(extensions):
                             os.remove(file)
 
@@ -259,7 +278,6 @@ class Downloader(object):
             os.chdir(current_directory)
 
             if file not in os.listdir(folder):
-
                 shutil.move(file, folder)
 
             else:
@@ -275,12 +293,10 @@ class Downloader(object):
                 shutil.move(audio, folder)
 
         elif (self.Format == "video"):
-
             os.chdir(folder)
             return current_directory, folder
 
         elif (self.Format == "comic book"):
-
             os.chdir(folder)
 
 
