@@ -602,7 +602,7 @@ class Olivia(object):
 		Name = self.root()
 		user = "\\".join(Name)
 		path = f"{user}\\Videos"
-		extensions = (".mp4", ".mkv", ".avi", ".flv", ".mov", ".wmv", ".webm")
+		extensions = (".mp4", ".mkv", ".wav", ".avi", ".flv", ".mov", ".wmv", ".webm")
 		item = video[0].lower()
 		status = False
 		size = len(video[0].split())
