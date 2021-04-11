@@ -414,7 +414,7 @@ class Olivia(object):
 		results = YoutubeSearch(request, max_results = 20).to_dict()
 		url = "https://www.youtube.com/results?search_query=" + "+".join(request.split()) + proxy
 
-		if (len(results) <= 0):
+		if (len(results) <= 2):
 
 			html = urllib.request.urlopen(url)
 			result = set()
