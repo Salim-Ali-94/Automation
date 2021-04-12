@@ -704,7 +704,7 @@ class Olivia(object):
 if __name__ == "__main__":
 
 	city = "" # current residing city of the user
-	key = "" # sign uo and get a free api key from the Open Weather Map website (user account required)
+	key = "" # sign up and get a free api key from the Open Weather Map website (user account required)
 	sender = "" # one email address to send the list from
 	password = "" # password of the email used for the "sender" (above) 
 	receiver = "" # another email address to receive the list
