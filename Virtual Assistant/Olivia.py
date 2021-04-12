@@ -53,7 +53,7 @@ class Olivia(object):
 
 		with gSTT.Microphone() as source:
 
-			""" capture.adjust_for_ambient_noise(source) """
+			capture.adjust_for_ambient_noise(source)
 			audio = capture.listen(source)
 			request = ""
 
@@ -62,6 +62,13 @@ class Olivia(object):
 				request = capture.recognize_google(audio)
 				print(f"\n{name} heard you say:", request, "\n")
 				self.interaction(request)
+				correct = self.correction(request)
+
+				if (correct.lower() != request.lower()):
+
+					print(f"\nCorrected input speech to:", correct, "\n")
+					self.interaction(correct)
+					request = correct
 
 			except gSTT.UnknownValueError as error:
 
@@ -131,7 +138,7 @@ class Olivia(object):
 
 			item = self.parse(command, remove_command[0], 0)
 
-			with open("grocery.txt", "r") as file: 
+			with open("grocery.txt", "r") as file:
 				groceries = file.readlines()
 
 			if (item in [entry.strip("\n") for entry in groceries]):
@@ -238,6 +245,33 @@ class Olivia(object):
 		return True, condition
 
 
+	def correction(self, audio):
+
+		if (audio.split()[0].lower() == "and"):
+			audio = audio.split()
+			audio[0] = "add"
+			audio = " ".join(audio)
+		elif ("i love you" in audio.lower()):
+			audio = audio.lower()
+			audio = audio.replace("i love you", name)
+		elif ("love you" in audio.lower()):
+			audio = audio.lower()
+			audio = audio.replace("love you", name)
+		elif ("onivia" in audio.lower()):
+			audio = audio.lower()
+			audio = audio.replace("onivia", name)
+		elif ("all of you" in audio.lower()):
+			audio = audio.lower()
+			audio = audio.replace("all of you", name)
+		elif ("golfland" in audio.lower()):
+			audio = audio.lower()
+			audio = audio.replace("golfland", "go offline")
+		elif ("glock 9" in audio.lower()):
+			audio = audio.lower()
+			audio = audio.replace("glock 9", "go offline")
+		return audio
+
+
 	def listen(self, indicator):
 
 		done, audio = False, ""
@@ -283,51 +317,59 @@ class Olivia(object):
 
 	def parse(self, command, category, indicator):
 
+		best, phrase = 0, ""
+
 		for sentence in category:
 
-			first = sentence.split(" x " if " x " in sentence else " x")
+			score = fw.ratio(sentence.lower(), command.lower())
 
-			if first[0] in command:
+			if (score > best):
 
-				common = sentence.split()
-				total = command.split()
-				reduced = command.split()
+				phrase = sentence
+				best = score
 
-				for word in total:
+		common = phrase.split()
+		total = command.split()
+		reduced = command.split()
 
-					if word in common:
-						reduced.remove(word)
+		for word in total:
 
-				if (indicator == 0):
+			if word in common:
+				reduced.remove(word)
 
-					document = reduced[-1]
-					reduced.pop()
-					item = " ".join(reduced)
-					return item
+		if (indicator == 0):
 
-				elif (indicator == 1):
+			if (" y " in phrase):
 
-					request = " ".join(reduced)
-					return request
+				document = reduced[-1]
+				reduced.pop()
 
-				elif (indicator == 2):
+			item = " ".join(reduced)
+			return item
 
-					if (len(reduced) >= 3):
+		elif (indicator == 1):
 
-						episode = reduced[-1]
-						season = reduced[-2]
-						reduced.pop()
-						reduced.pop()
-						title = " ".join(reduced)
-						return [title, season, episode]
+			request = " ".join(reduced)
+			return request
 
-					elif (len(reduced) != 0):
+		elif (indicator == 2):
 
-						title = " ".join(reduced)
-						return [title, "x", "x"]
+			if (len(reduced) >= 3):
 
-					else:
-						return None
+				episode = reduced[-1]
+				season = reduced[-2]
+				reduced.pop()
+				reduced.pop()
+				title = " ".join(reduced)
+				return [title, season, episode]
+
+			elif (len(reduced) != 0):
+
+				title = " ".join(reduced)
+				return [title, "x", "x"]
+
+			else:
+				return None
 
 
 	def save(self, note, item):
@@ -368,11 +410,9 @@ class Olivia(object):
 	def read(self, note):
 
 		with open(f"{note}.txt", "r") as file:
-
 			items = [line for line in file]
 
 		for item in items:
-
 			self.respond(item)
 
 
@@ -559,6 +599,7 @@ class Olivia(object):
 		player.set_media(media)
 		self.VLC = instance.media_list_player_new()
 		self.VLC.set_media_list(media_list)
+		self.VLC.get_media_player().audio_set_volume(40)
 		self.VLC.play()
 		self.flag = True
 
@@ -587,15 +628,29 @@ class Olivia(object):
 	def play_video(self, video, directory):
 
 		space = Key.space
-		back = Key.left
+		left = Key.left
+		down = Key.down
+		up = Key.up
 		keyboard = Controller()
 		os.chdir(directory)
-		subprocess.Popen(["C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", "--fullscreen", video, '--key-pause="space"', "--qt-continue=2"], shell = True)
+		subprocess.Popen(["C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", "--fullscreen", video, "--qt-continue=2"], shell = True)
 		time.sleep(20)
-		keyboard.press(back)
-		keyboard.release(back)
+		keyboard.press(left)
+		keyboard.release(left)
+		keyboard.press(left)
+		keyboard.release(left)
 		keyboard.press(space)
 		keyboard.release(space)
+
+		for index in range(40):
+
+			keyboard.press(down)
+			keyboard.release(down)
+
+		for index in range(8):
+
+			keyboard.press(up)
+			keyboard.release(up)
 
 
 	def find_video(self, video):
@@ -703,11 +758,11 @@ class Olivia(object):
 
 if __name__ == "__main__":
 
-	city = "" # current residing city of the user
-	key = "" # sign up and get a free api key from the Open Weather Map website (user account required)
-	sender = "" # one email address to send the list from
-	password = "" # password of the email used for the "sender" (above) 
-	receiver = "" # another email address to receive the list
+	city = "Polokwane"
+	key = "7022786074cb31b1dbf0e75ad9a704dc"
+	sender = "salim9x@gmail.com"
+	password = "googlepassword"
+	receiver = "u14262208@tuks.co.za"
 	enable, counter, condition = True, 0, 0
 	agent = Olivia(city, key, sender, receiver, password)
 
