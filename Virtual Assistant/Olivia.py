@@ -587,10 +587,13 @@ class Olivia(object):
 	def play_video(self, video, directory):
 
 		space = Key.space
+		back = Key.left
 		keyboard = Controller()
 		os.chdir(directory)
 		subprocess.Popen(["C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", "--fullscreen", video, '--key-pause="space"', "--qt-continue=2"], shell = True)
 		time.sleep(20)
+		keyboard.press(back)
+		keyboard.release(back)
 		keyboard.press(space)
 		keyboard.release(space)
 
