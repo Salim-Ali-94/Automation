@@ -758,11 +758,11 @@ class Olivia(object):
 
 if __name__ == "__main__":
 
-	city = "Polokwane"
-	key = "7022786074cb31b1dbf0e75ad9a704dc"
-	sender = "salim9x@gmail.com"
-	password = "googlepassword"
-	receiver = "u14262208@tuks.co.za"
+	city = "" # current residing city of the user
+	key = "" # sign up and get a free api key from the Open Weather Map website (user account required)
+	sender = "" # one email address to send the list from
+	password = "" # password of the email used for the "sender" (above) 
+	receiver = "" # another email address to receive the list
 	enable, counter, condition = True, 0, 0
 	agent = Olivia(city, key, sender, receiver, password)
 
