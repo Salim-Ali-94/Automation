@@ -224,6 +224,7 @@ class Downloader(object):
 
                 click = self.driver.find_element_by_link_text(issues[issue - 1].text)
                 click.click()
+                self.reCaptcha_handler()
                 images = self.save_images()
                 self.download_images(images)
                 self.driver.quit()
@@ -247,6 +248,7 @@ class Downloader(object):
                     issue = list(reversed(issues))[index]
                     click = self.driver.find_element_by_link_text(issue.text)
                     click.click()
+                    self.reCaptcha_handler()
                     images = self.save_images()
                     self.download_images(images)
                     self.driver.get(webpage)
@@ -391,6 +393,22 @@ class Downloader(object):
 
             skip = "Skip ad"
             button = self.driver.find_element_by_link_text(skip)
+            button.click()
+
+
+    def reCaptcha_handler(self):
+
+        servey = BeautifulSoup(self.driver.page_source, "html.parser")
+        configuration = {"id": "recaptcha-anchor"}
+        Servey = servey.find_all("div", attrs = configuration)
+
+        if (len(Servey) != 0):
+
+            check_box = "recaptcha-anchor"
+            box = self.driver.find_element_by_id(check_box)
+            box.click()
+            ok = "OK"
+            button = self.driver.find_element_by_link_text(ok)
             button.click()
 
 
