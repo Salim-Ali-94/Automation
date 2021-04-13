@@ -184,6 +184,8 @@ class Downloader(object):
             os.system("cls")
             title = input("\nPlease input a search request for the required comic book(s): ")
             self.directory_manager(tag)
+            path = os.getcwd()
+            folder = os.listdir(path)
             self.driver.get(URL)
             search = self.driver.find_element_by_tag_name("input")
             search.send_keys(title)
@@ -229,9 +231,8 @@ class Downloader(object):
                 self.download_images(images)
                 self.driver.quit()
                 self.pdf_converter(title, number)
-                path = os.getcwd()
 
-                for file in os.listdir(path):
+                for file in folder:
 
                     if file.endswith(extensions):
                         os.remove(file)
@@ -239,27 +240,27 @@ class Downloader(object):
             else:
  
                 webpage = self.driver.current_url
-                size, count = len(issues), 1
+                size = len(issues)
 
                 for index in range(size):
 
-                    self.advert_handler()
-                    issues = self.driver.find_elements_by_tag_name("td a")
-                    issue = list(reversed(issues))[index]
-                    click = self.driver.find_element_by_link_text(issue.text)
-                    click.click()
-                    self.reCaptcha_handler()
-                    images = self.save_images()
-                    self.download_images(images)
-                    self.driver.get(webpage)
-                    self.pdf_converter(title, count)
-                    path = os.getcwd()
-                    count += 1
+                    if (f"{title} {index + 1}.pdf" not in folder):
 
-                    for file in os.listdir(path):
+                        self.advert_handler()
+                        issues = self.driver.find_elements_by_tag_name("td a")
+                        issue = list(reversed(issues))[index]
+                        click = self.driver.find_element_by_link_text(issue.text)
+                        click.click()
+                        self.reCaptcha_handler()
+                        images = self.save_images()
+                        self.download_images(images)
+                        self.driver.get(webpage)
+                        self.pdf_converter(title, index + 1)
 
-                        if file.endswith(extensions):
-                            os.remove(file)
+                        for file in folder:
+
+                            if file.endswith(extensions):
+                                os.remove(file)
 
                 self.driver.quit()
                     
