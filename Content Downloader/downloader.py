@@ -401,7 +401,7 @@ class Downloader(object):
 
         servey = BeautifulSoup(self.driver.page_source, "html.parser")
         configuration = {"id": "recaptcha-anchor"}
-        Servey = servey.find_all("div", attrs = configuration)
+        Servey = servey.find_all("span", attrs = configuration)
 
         if (len(Servey) != 0):
 
