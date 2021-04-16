@@ -9,6 +9,7 @@ import youtube_dl as ytdl
 import img2pdf as converter
 from bs4 import BeautifulSoup
 from selenium import webdriver
+import undetected_chromedriver as browser
 sys.stderr = open(os.devnull, "w")
 from fuzzywuzzy import fuzz as fw
 sys.stderr = sys.__stderr__
@@ -26,9 +27,9 @@ class Downloader(object):
     def __init__(self, driver_path):
 
         self.selector(None)
-        settings = webdriver.ChromeOptions()
+        settings = browser.ChromeOptions()
         settings.headless = True
-        self.driver = webdriver.Chrome(executable_path = driver_path, options = settings)
+        self.driver = browser.Chrome(executable_path = driver_path, options = settings)
         self.driver.implicitly_wait(30)
 
 
@@ -52,7 +53,7 @@ class Downloader(object):
 
                 while Format not in self.options:
                     os.system("cls")
-                    Format = input("\nInvalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \n\n")
+                    Format = input("Invalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \n\n")
 
                 if (Format.lower() == "a"):
                     self.Format = "audio"
@@ -78,7 +79,7 @@ class Downloader(object):
 
                 while preference not in self.options[0:4]:
                     os.system("cls")
-                    preference = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
+                    preference = input("Invalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
                 if (preference.lower() == "a"):
                     preference = "yes"
@@ -106,7 +107,7 @@ class Downloader(object):
 
                 while Type not in self.options[0:4]:
                     os.system("cls")
-                    Type = input("\nInvalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
+                    Type = input("Invalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
 
                 if (Type.lower() == "a"):
                     Type = "single"
@@ -131,7 +132,7 @@ class Downloader(object):
 
                 while Type not in self.options[0:4]:
                     os.system("cls")
-                    Type = input("\nInvalid entry, please select an available option: \n\nA: single issue \nB: collection \n\n")
+                    Type = input("Invalid entry, please select an available option: \n\nA: single issue \nB: collection \n\n")
 
                 if (Type.lower() == "a"):
                     Type = "single"
@@ -185,6 +186,7 @@ class Downloader(object):
             title = input("\nPlease input a search request for the required comic book(s): ")
             self.directory_manager(tag)
             path = os.getcwd()
+            folder = os.listdir(path)
             self.driver.get(URL)
             search = self.driver.find_element_by_tag_name("input")
             search.send_keys(title)
@@ -260,7 +262,7 @@ class Downloader(object):
 
                             if file.endswith(extensions):
                                 os.remove(file)
-
+                                
                 self.driver.quit()
                     
 
@@ -455,7 +457,7 @@ class Downloader(object):
 
 if __name__ == "__main__":
     
-    path = "C:\\chrome_driver\\chromedriver"
+    path = "C:\\chrome_driver\\chromedriver.exe"
     download = Downloader(path)
     download.search()
     os.system("cls")
