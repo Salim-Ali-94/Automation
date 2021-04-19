@@ -53,7 +53,7 @@ class Downloader(object):
 
                 while Format not in self.options:
                     os.system("cls")
-                    Format = input("Invalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \n\n")
+                    Format = input("\nInvalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \n\n")
 
                 if (Format.lower() == "a"):
                     self.Format = "audio"
@@ -79,7 +79,7 @@ class Downloader(object):
 
                 while preference not in self.options[0:4]:
                     os.system("cls")
-                    preference = input("Invalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
+                    preference = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
                 if (preference.lower() == "a"):
                     preference = "yes"
@@ -107,7 +107,7 @@ class Downloader(object):
 
                 while Type not in self.options[0:4]:
                     os.system("cls")
-                    Type = input("Invalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
+                    Type = input("\nInvalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
 
                 if (Type.lower() == "a"):
                     Type = "single"
@@ -132,7 +132,7 @@ class Downloader(object):
 
                 while Type not in self.options[0:4]:
                     os.system("cls")
-                    Type = input("Invalid entry, please select an available option: \n\nA: single issue \nB: collection \n\n")
+                    Type = input("\nInvalid entry, please select an available option: \n\nA: single issue \nB: collection \n\n")
 
                 if (Type.lower() == "a"):
                     Type = "single"
