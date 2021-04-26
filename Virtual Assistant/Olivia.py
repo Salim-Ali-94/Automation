@@ -30,8 +30,6 @@ class Olivia(object):
 		self.engine.setProperty("voice", voice)
 		rate = self.engine.getProperty("rate")
 		self.engine.setProperty("rate", rate - 50)
-		self.reset_status()
-		self.email("grocery")
 		self.key = key
 		self.city = city[0].upper() + city[1:].lower()
 		self.sender = sender
@@ -39,6 +37,8 @@ class Olivia(object):
 		self.receiver = receiver
 		self.ticket = False
 		self.flag = False
+		self.reset_status()
+		self.email("grocery")
 
 
 	def respond(self, text):
