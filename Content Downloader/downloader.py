@@ -198,7 +198,7 @@ class Downloader(object):
 
             else:
 
-                site = self.driver.find_elements_by_tag_name("td")
+                site = self.driver.find_elements_by_tag_name("td a")
                 comics = [comic.text for comic in site]
                 channel, source = None, None
                 self.link_selector(site, title, comics, channel, source)
