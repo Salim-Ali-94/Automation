@@ -342,10 +342,9 @@ class Downloader(object):
             title_score = fw.ratio(title.lower(), label[index].lower())
             channel_score = fw.ratio(channel.lower(), source[index].lower()) if (channel != None) else 0
             score = title_score + channel_score
-            position += 1 if (score > best) else 0
+            position = index if (score > best) else position
             best = score if (score > best) else best
 
-        position -= 1 if (position > 0) else 0
         self.url = link[position]
 
 
