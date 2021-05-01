@@ -1,15 +1,17 @@
+import time
 import shutil
+import signal
+import subprocess
 import os, re, sys
 import requests
 import random
 import warnings
+import psutil
 import urllib.request
 import unicodedata as ucd
 import youtube_dl as ytdl
 import img2pdf as converter
-from bs4 import BeautifulSoup
 from selenium import webdriver
-import undetected_chromedriver as browser
 sys.stderr = open(os.devnull, "w")
 from fuzzywuzzy import fuzz as fw
 sys.stderr = sys.__stderr__
@@ -17,6 +19,7 @@ from youtube_search import YoutubeSearch
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 from youtubesearchpython import PlaylistsSearch as playlist_search
+from selenium.common.exceptions import WebDriverException
 
 
 class Downloader(object):
@@ -27,10 +30,20 @@ class Downloader(object):
     def __init__(self, driver_path):
 
         self.selector(None)
-        settings = browser.ChromeOptions()
+        subprocess.call("TASKKILL /f  /IM  CHROMEDRIVER.EXE")
+        settings = webdriver.ChromeOptions()
         settings.headless = True
-        self.driver = browser.Chrome(executable_path = driver_path, options = settings)
+        path = os.getcwd()
+        folder = os.listdir(path)
+
+        try:
+            self.driver = webdriver.Chrome(executable_path = driver_path, options = settings)
+        except:
+            settings.add_argument("--remote-debugging-port=9222")
+            self.driver = webdriver.Chrome(executable_path = driver_path, options = settings)
+        
         self.driver.implicitly_wait(30)
+        self.kill_chrome()
 
 
     def selector(self, indicator = 0):
@@ -187,7 +200,7 @@ class Downloader(object):
             self.directory_manager(tag)
             path = os.getcwd()
             folder = os.listdir(path)
-            self.driver.get(URL)
+            self.test_link(URL)
             search = self.driver.find_element_by_tag_name("input")
             search.send_keys(title)
             search.send_keys(Keys.ENTER)
@@ -227,6 +240,7 @@ class Downloader(object):
 
                 click = self.driver.find_element_by_link_text(issues[issue - 1].text)
                 click.click()
+                self.advert_handler()
                 images = self.save_images()
                 self.download_images(images)
                 self.driver.quit()
@@ -252,9 +266,10 @@ class Downloader(object):
                         issue = list(reversed(issues))[index]
                         click = self.driver.find_element_by_link_text(issue.text)
                         click.click()
+                        self.advert_handler()
                         images = self.save_images()
                         self.download_images(images)
-                        self.driver.get(webpage)
+                        self.test_link(webpage)
                         self.pdf_converter(title, index + 1)
                         folder = os.listdir(path)
 
@@ -262,7 +277,7 @@ class Downloader(object):
 
                             if file.endswith(extensions):
                                 os.remove(file)
-                                
+
                 self.driver.quit()
                     
 
@@ -387,15 +402,32 @@ class Downloader(object):
 
     def advert_handler(self):
 
-        advert = BeautifulSoup(self.driver.page_source, "html.parser")
-        configuration = {"id": "ni-overlay"}
-        Advert = advert.find_all("div", attrs = configuration)
+        ID = "ni-overlay"
+        advert = self.driver.find_elements_by_id(ID)
 
-        if (len(Advert) != 0):
+        if (len(advert) != 0):
 
             skip = "Skip ad"
             button = self.driver.find_element_by_link_text(skip)
             button.click()
+
+
+    def test_link(self, site):
+
+        status = False
+
+        while not status:
+
+            try:
+
+                self.driver.get(site)
+                status = True
+                break
+
+            except WebDriverException:
+
+                time.sleep(2)
+                continue
 
 
     def save_images(self):
@@ -407,10 +439,7 @@ class Downloader(object):
         page = self.driver.find_element_by_id("selectReadType")
         Page = Select(page)
         Page.select_by_visible_text("All pages")
-        url = self.driver.current_url
-        response = requests.get(url)
-        soup = BeautifulSoup(response.content, "html.parser")
-        website = str(soup.prettify())
+        website = str(self.driver.page_source)
         images = []
 
         with open("comicbook_site.txt", "w+") as file:
@@ -438,8 +467,11 @@ class Downloader(object):
 
         for image in images:
 
-            urllib.request.urlretrieve(image, f"{counter}.jpg")
-            counter += 1
+            with open("{}.jpg".format(counter), "wb") as file:
+
+                site = requests.get(image.strip("\""))
+                file.write(site.content)
+                counter += 1
 
 
     def pdf_converter(self, name, number):
@@ -453,12 +485,40 @@ class Downloader(object):
         PDF.close()
 
 
+    def kill_chrome(self):
+
+        path = os.getcwd()
+        folder = os.listdir(path)
+        parent = psutil.Process(self.driver.service.process.pid)
+        children = parent.children(recursive = True)
+
+        if ("chrome_tabs.txt" in folder):
+    
+            with open("chrome_tabs.txt", "r") as file:
+                ID = file.readlines()
+
+            for pid in ID:
+
+                try:
+                    os.kill(int(pid.strip("\n")), signal.SIGTERM)
+                except:
+                    continue
+
+        with open("chrome_tabs.txt", "w") as file:
+
+            file.write(f"{self.driver.service.process.pid}")
+
+            for child in children:
+
+                file.write(f"\n{child.pid}")
+
+
 
 
 if __name__ == "__main__":
     
-    path = "C:\\chrome_driver\\chromedriver.exe"
+    path = "C:\\chrome_driver\\chromedriver"
     download = Downloader(path)
     download.search()
     os.system("cls")
-    print("Download complete\n")
+    print("\nDownload complete\n")
