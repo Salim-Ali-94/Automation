@@ -609,7 +609,7 @@ class Downloader(object):
 
         if (len(servey) != 0):
 
-            phrase = random.choice(["this dumb website thinks I'm a robot. Someone please solve this verification test so that I can get back to my job", 
+            phrase = random.choice(["this dumb website thinks I'm a robot. someone please solve this verification test so that I can get back to my job", 
                                     "will someone please take care of this verification test. it's really hindering my efficiency",
                                     "if this verification test appears one more time I'm going to throw something",
                                     "please do something about this verification test. I was not programmed to solve these",
