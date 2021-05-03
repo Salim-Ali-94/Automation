@@ -29,7 +29,7 @@ class Downloader(object):
     
     options = ["A", "a", "B", "b", "C", "c"]
     standard = r"[^a-zA-Z0-9\s:]"
-    restrictions = ["?", "/", "\\", ":", "*", ">", "<", "|", "'", '"', ""]
+    restrictions = ["?", "/", "\\", ":", "*", ">", "<", "|", "'", '"']
     
     def __init__(self, driver_path):
 
