@@ -484,6 +484,7 @@ class Downloader(object):
             except WebDriverException:
 
                 time.sleep(2)
+                status = False
                 continue
 
 
@@ -558,17 +559,18 @@ class Downloader(object):
 
             try:
 
-                images = self.save_images()
-                self.download_images(images)
-                self.pdf_converter(title, number)
-
-            except:
-
                 files = os.listdir(path)
                 os.remove(f"{name} {number}.pdf") if (f"{name} {number}.pdf" in files) else None
                 images = self.save_images()
                 self.download_images(images)
-                self.pdf_converter(name, number)
+                self.pdf_converter(title, number)
+                status = True
+                break
+
+            except:
+
+                status = False
+                continue
 
 
     def kill_chrome(self):
