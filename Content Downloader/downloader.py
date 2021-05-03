@@ -20,28 +20,38 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.select import Select
 from youtubesearchpython import PlaylistsSearch as playlist_search
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-
+                        
 class Downloader(object):
     
     options = ["A", "a", "B", "b", "C", "c"]
     standard = r"[^a-zA-Z0-9\s:]"
-
+    restrictions = ["?", "/", "\\", ":", "*", ">", "<", "|", "'", '"', ""]
+    
     def __init__(self, driver_path):
 
         self.selector(None)
+        self.directory = driver_path
+        self.reset_driver()
+
+
+    def reset_driver(self, status = True):
+
         subprocess.call("TASKKILL /f  /IM  CHROMEDRIVER.EXE")
         settings = webdriver.ChromeOptions()
-        settings.headless = True
+        settings.headless = status
         path = os.getcwd()
         folder = os.listdir(path)
 
         try:
-            self.driver = webdriver.Chrome(executable_path = driver_path, options = settings)
+            self.driver = webdriver.Chrome(executable_path = self.directory, options = settings)
         except:
             settings.add_argument("--remote-debugging-port=9222")
-            self.driver = webdriver.Chrome(executable_path = driver_path, options = settings)
-        
+            self.driver = webdriver.Chrome(executable_path = self.directory, options = settings)
+
         self.driver.implicitly_wait(30)
         self.kill_chrome()
 
@@ -195,16 +205,20 @@ class Downloader(object):
             URL = "https://readcomiconline.to/Search/Comic"
             os.system("cls")
             tag = input("\nWhich comic book series are you downloading? (Strange Tales, Secret Wars etc): ")
+            status = [character for character in self.restrictions if character in tag]
+            status = list(filter(None, status))
+            tag = self.test_query(tag, 0) if ((tag == "") | (status != [])) else tag
             os.system("cls")
             title = input("\nPlease input a search request for the required comic book(s): ")
+            title = self.test_query(title, 1) if (title == "") else title
             self.directory_manager(tag)
             path = os.getcwd()
             folder = os.listdir(path)
-            self.test_link(URL)
+            self.persist_search(URL)
             search = self.driver.find_element_by_tag_name("input")
             search.send_keys(title)
             search.send_keys(Keys.ENTER)
-            self.advert_handler()
+            self.servey_detector(self.driver.current_url)
 
             if (self.driver.current_url[-5:].lower() != "comic"):
                 issues = self.driver.find_elements_by_tag_name("td a")
@@ -218,7 +232,7 @@ class Downloader(object):
                 book = self.url.text
                 click = self.driver.find_element_by_link_text(book)
                 click.click()
-                self.advert_handler()
+                self.servey_detector(self.driver.current_url)
                 issues = self.driver.find_elements_by_tag_name("td a")
 
             if (Type == "single"):
@@ -240,11 +254,9 @@ class Downloader(object):
 
                 click = self.driver.find_element_by_link_text(issues[issue - 1].text)
                 click.click()
-                self.advert_handler()
-                images = self.save_images()
-                self.download_images(images)
+                self.servey_detector(self.driver.current_url)
+                self.process_file(title, number)
                 self.driver.quit()
-                self.pdf_converter(title, number)
                 folder = os.listdir(path)
 
                 for file in folder:
@@ -259,18 +271,16 @@ class Downloader(object):
 
                 for index in range(size):
 
-                    if (f"{title} {index + 1}.pdf" not in folder):
+                    if f"{title} {index + 1}.pdf" not in folder:
 
-                        self.advert_handler()
+                        self.servey_detector(self.driver.current_url)
                         issues = self.driver.find_elements_by_tag_name("td a")
                         issue = list(reversed(issues))[index]
                         click = self.driver.find_element_by_link_text(issue.text)
                         click.click()
-                        self.advert_handler()
-                        images = self.save_images()
-                        self.download_images(images)
-                        self.test_link(webpage)
-                        self.pdf_converter(title, index + 1)
+                        self.servey_detector(self.driver.current_url)
+                        self.process_file(title, index + 1)
+                        self.persist_search(webpage)
                         folder = os.listdir(path)
 
                         for file in folder:
@@ -279,7 +289,7 @@ class Downloader(object):
                                 os.remove(file)
 
                 self.driver.quit()
-                    
+
 
     def directory_manager(self, tag, file = None):
 
@@ -289,11 +299,14 @@ class Downloader(object):
         user = "\\".join(name)
         path = f"{user}\\Documents"
         os.chdir(path)
-        os.makedirs(tag) if (os.path.isdir(tag) == False) else None
-        folder = f"{path}\\{tag}"
 
         if (self.Format == "audio"):
 
+            os.makedirs("Audio") if (os.path.isdir("Audio") == False) else None
+            directory = f"{user}\\Documents\\Audio"
+            os.chdir(directory)
+            os.makedirs(tag) if (os.path.isdir(tag) == False) else None
+            folder = f"{directory}\\{tag}"
             os.chdir(current_directory)
 
             if file not in os.listdir(folder):
@@ -303,7 +316,7 @@ class Downloader(object):
 
                 while file in os.listdir(folder):
 
-                    audio = file.split(".")[0] 
+                    audio = file.split(".")[0]
                     audio += f" ({random.randint(0, 100)})"
                     audio += ".mp3"
                     file = audio
@@ -312,10 +325,23 @@ class Downloader(object):
                 shutil.move(audio, folder)
 
         elif (self.Format == "video"):
+
+            os.makedirs("Video") if (os.path.isdir("Video") == False) else None
+            directory = f"{user}\\Documents\\Video"
+            os.chdir(directory)
+            os.makedirs(tag) if (os.path.isdir(tag) == False) else None
+            folder = f"{directory}\\{tag}"
             os.chdir(folder)
+
             return current_directory, folder
 
         elif (self.Format == "comic book"):
+
+            os.makedirs("Comic Books") if (os.path.isdir("Comic Books") == False) else None
+            directory = f"{user}\\Documents\\Comic Books"
+            os.chdir(directory)
+            os.makedirs(tag) if (os.path.isdir(tag) == False) else None
+            folder = f"{directory}\\{tag}"
             os.chdir(folder)
 
 
@@ -348,15 +374,43 @@ class Downloader(object):
         self.url = link[position]
 
 
+    def test_query(self, request, indicator):
+
+        if (indicator == 0):
+
+            status = [character for character in self.restrictions if character in request]
+            status = list(filter(None, status))
+
+            while ((request == "") | (status != [])):
+
+                os.system("cls")
+                request = input("\nInvalid folder name, please provide a valid title for the directory (restricted characters include; ?, /, \\, :, *, >, <, |, \', \" and leaving the query blank): ")
+                status.clear()
+                status = [character for character in self.restrictions if character in request]
+                status = list(filter(None, status))
+
+        elif (indicator == 1):
+
+            while (request == ""):
+
+                os.system("cls")
+                request = input("\nYour search input is empty, please provide a suitable query: ")
+
+        return request
+
+
     def extractor(self):
 
         if (self.Format == "audio"):
 
             os.system("cls")
             tag = input("\nWhat category of audio are you downloading? (podcast, audiobook etc): ")
+            status = [character for character in self.restrictions if character in tag]
+            tag = self.test_query(tag, 0) if ((tag == "") | (status != [])) else tag
             channel = self.selector()
             os.system("cls")
             title = input("\nPlease input a search request for the required file: ")
+            title = self.test_query(title, 1) if (title == "") else title
             result = YoutubeSearch(title, max_results = 20).to_dict()
             link = ["https://www.youtube.com" + entry['url_suffix'] for entry in result]
             label = [entry['title'] for entry in result]
@@ -367,10 +421,14 @@ class Downloader(object):
             Type = self.selector()
             os.system("cls")
             tag = input("\nWhat category of video are you downloading? (tutorial, lecture etc): ")
+            status = [character for character in self.restrictions if character in tag]
+            tag = self.test_query(tag, 0) if ((tag == "") | (status != [])) else tag
             os.system("cls")
             channel = input("\nWhich channel will you be downloading your content from?: ")
+            channel = self.test_query(channel, 1) if (channel == "") else channel
             os.system("cls")
             title = input("\nPlease input a search request for the required file(s): ")
+            title = self.test_query(title, 1) if (title == "") else title
 
             if (Type == "single"):
 
@@ -411,7 +469,7 @@ class Downloader(object):
             button.click()
 
 
-    def test_link(self, site):
+    def persist_search(self, site):
 
         status = False
 
@@ -466,11 +524,18 @@ class Downloader(object):
 
         for image in images:
 
-            with open("{}.jpg".format(counter), "wb") as file:
+            try:
 
-                site = requests.get(image.strip("\""))
-                file.write(site.content)
+                urllib.request.urlretrieve(image, f"{counter}.jpg")
                 counter += 1
+
+            except:
+
+                with open("{}.jpg".format(counter), "wb") as file:
+
+                    site = requests.get(image.strip("\""))
+                    file.write(site.content)
+                    counter += 1
 
 
     def pdf_converter(self, name, number):
@@ -482,6 +547,28 @@ class Downloader(object):
         PDF = open("{} {}.pdf".format(name, number), "wb")
         PDF.write(converter.convert(images))
         PDF.close()
+
+
+    def process_file(self, name, number):
+
+        status = False
+        path = os.getcwd()
+
+        while not status:
+
+            try:
+
+                images = self.save_images()
+                self.download_images(images)
+                self.pdf_converter(title, number)
+
+            except:
+
+                files = os.listdir(path)
+                os.remove(f"{name} {number}.pdf") if (f"{name} {number}.pdf" in files) else None
+                images = self.save_images()
+                self.download_images(images)
+                self.pdf_converter(name, number)
 
 
     def kill_chrome(self):
@@ -510,6 +597,34 @@ class Downloader(object):
             for child in children:
 
                 file.write(f"\n{child.pid}")
+
+
+    def servey_detector(self, site):
+
+        self.advert_handler()
+        servey = self.driver.find_elements_by_id("recaptcha-anchor")
+
+        if (len(servey) != 0):
+
+            phrase = random.choice(["this dumb website thinks I'm a robot. Someone please solve this verification test so that I can get back to my job", 
+                                    "will someone please take care of this verification test. it's really hindering my efficiency",
+                                    "if this verification test appears one more time I'm going to throw something",
+                                    "please do something about this verification test. I was not programmed to solve these",
+                                    "someone please eliminate this verification test so that I can get my work done",
+                                    "please get this ticket out of my face"])
+
+            print(f"\n\n\n\n{phrase}\n\n\n\n")
+            self.driver.quit()
+            self.reset_driver(False)
+            self.persist_search(site)
+            element = (By.ID, "recaptcha-anchor")
+            WebDriverWait(self.driver, 86400).until(EC.invisibility_of_element_located(element))
+            self.advert_handler()
+            page = self.driver.current_url
+            self.driver.quit()
+            self.reset_driver()
+            self.persist_search(page)
+            self.advert_handler()
 
 
 
