@@ -75,6 +75,7 @@ class Downloader(object):
             else:
 
                 while Format not in self.options:
+                  
                     os.system("cls")
                     Format = input("\nInvalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \n\n")
 
@@ -129,6 +130,7 @@ class Downloader(object):
             else:
 
                 while Type not in self.options[0:4]:
+                  
                     os.system("cls")
                     Type = input("\nInvalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
 
@@ -154,6 +156,7 @@ class Downloader(object):
             else:
 
                 while Type not in self.options[0:4]:
+                  
                     os.system("cls")
                     Type = input("\nInvalid entry, please select an available option: \n\nA: single issue \nB: collection \n\n")
 
@@ -206,7 +209,6 @@ class Downloader(object):
             os.system("cls")
             tag = input("\nWhich comic book series are you downloading? (Strange Tales, Secret Wars etc): ")
             status = [character for character in self.restrictions if character in tag]
-            status = list(filter(None, status))
             tag = self.test_query(tag, 0) if ((tag == "") | (status != [])) else tag
             os.system("cls")
             title = input("\nPlease input a search request for the required comic book(s): ")
@@ -247,6 +249,7 @@ class Downloader(object):
                 else:
 
                     while not issue.isdigit():
+                      
                         os.system("cls")
                         issue = input("\nInvalid entry, please specify an integer value for the selected comic book series: ")
 
@@ -379,7 +382,6 @@ class Downloader(object):
         if (indicator == 0):
 
             status = [character for character in self.restrictions if character in request]
-            status = list(filter(None, status))
 
             while ((request == "") | (status != [])):
 
@@ -387,7 +389,6 @@ class Downloader(object):
                 request = input("\nInvalid folder name, please provide a valid title for the directory (restricted characters include; ?, /, \\, :, *, >, <, |, \', \" and leaving the query blank): ")
                 status.clear()
                 status = [character for character in self.restrictions if character in request]
-                status = list(filter(None, status))
 
         elif (indicator == 1):
 
