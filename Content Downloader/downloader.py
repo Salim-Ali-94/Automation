@@ -563,7 +563,7 @@ class Downloader(object):
                 os.remove(f"{name} {number}.pdf") if (f"{name} {number}.pdf" in files) else None
                 images = self.save_images()
                 self.download_images(images)
-                self.pdf_converter(title, number)
+                self.pdf_converter(name, number)
                 status = True
                 break
 
