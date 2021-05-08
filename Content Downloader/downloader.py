@@ -23,6 +23,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from subprocess import DEVNULL, STDOUT
 
                         
 class Downloader(object):
@@ -40,15 +41,16 @@ class Downloader(object):
 
     def reset_driver(self, status = True):
 
-        subprocess.call("TASKKILL /f  /IM  CHROMEDRIVER.EXE")
+        subprocess.call("TASKKILL /f  /IM  CHROMEDRIVER.EXE", stdout = DEVNULL, stderr = STDOUT)
         settings = webdriver.ChromeOptions()
         settings.headless = status
         path = os.getcwd()
         folder = os.listdir(path)
+        settings.add_experimental_option("excludeSwitches", ["enable-logging"])
+        try: self.driver = webdriver.Chrome(executable_path = self.directory, options = settings)
 
-        try:
-            self.driver = webdriver.Chrome(executable_path = self.directory, options = settings)
         except:
+
             settings.add_argument("--remote-debugging-port=9222")
             self.driver = webdriver.Chrome(executable_path = self.directory, options = settings)
 
@@ -62,83 +64,59 @@ class Downloader(object):
 
             os.system("cls")
             Format = input("\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \n\n")
-
-            if (Format.lower() == "a"):
-                self.Format = "audio"
-
-            elif (Format.lower() == "b"):
-                self.Format = "video"
-
-            elif (Format.lower() == "c"):
-                self.Format = "comic book"
+            if (Format.lower() == "a"): self.Format = "audio"
+            elif (Format.lower() == "b"): self.Format = "video"
+            elif (Format.lower() == "c"): self.Format = "comic book"
 
             else:
 
                 while Format not in self.options:
-                  
+
                     os.system("cls")
                     Format = input("\nInvalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \n\n")
 
-                if (Format.lower() == "a"):
-                    self.Format = "audio"
-
-                elif (Format.lower() == "b"):
-                    self.Format = "video"
-
-                elif (Format.lower() == "c"):
-                    self.Format = "comic book"
+                if (Format.lower() == "a"): self.Format = "audio"
+                elif (Format.lower() == "b"): self.Format = "video"
+                elif (Format.lower() == "c"): self.Format = "comic book"
 
         elif (self.Format == "audio"):
 
             os.system("cls")
             preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
 
-            if (preference.lower() == "a"):
-                preference = "yes"
-
-            elif (preference.lower() == "b"):
-                channel = None
+            if (preference.lower() == "a"): preference = "yes"
+            elif (preference.lower() == "b"): channel = None
 
             else:
 
                 while preference not in self.options[0:4]:
+
                     os.system("cls")
                     preference = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-                if (preference.lower() == "a"):
-                    preference = "yes"
-
-                elif (preference.lower() == "b"):
-                    channel = None
+                if (preference.lower() == "a"): preference = "yes"
+                elif (preference.lower() == "b"): channel = None
 
             os.system("cls")
             channel = input("\nPlease enter a channel to search for your content: ") if (preference == "yes") else None
-
             return channel
 
         elif (self.Format == "video"):
 
             os.system("cls")
             Type = input("\nAre you downloading a playlist or a single file: \n\nA: single video \nB: playlist \n\n")
-
-            if (Type.lower() == "a"):
-                Type = "single"
-
-            elif (Type.lower() == "b"):
-                Type = "playlist"
+            if (Type.lower() == "a"): Type = "single"
+            elif (Type.lower() == "b"): Type = "playlist"
 
             else:
 
                 while Type not in self.options[0:4]:
-                  
+
                     os.system("cls")
                     Type = input("\nInvalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
 
-                if (Type.lower() == "a"):
-                    Type = "single"
-
-                elif (Type.lower() == "b"):
-                    Type = "playlist"
+                if (Type.lower() == "a"): Type = "single"
+                elif (Type.lower() == "b"): Type = "playlist"
 
             return Type
 
@@ -146,25 +124,18 @@ class Downloader(object):
 
             os.system("cls")
             Type = input("\nAre you downloading an entire collection or only a single issue: \n\nA: single issue \nB: collection \n\n")
-
-            if (Type.lower() == "a"):
-                Type = "single"
-
-            elif (Type.lower() == "b"):
-                Type = "collection"
+            if (Type.lower() == "a"): Type = "single"
+            elif (Type.lower() == "b"): Type = "collection"
 
             else:
 
                 while Type not in self.options[0:4]:
-                  
+
                     os.system("cls")
                     Type = input("\nInvalid entry, please select an available option: \n\nA: single issue \nB: collection \n\n")
 
-                if (Type.lower() == "a"):
-                    Type = "single"
-
-                elif (Type.lower() == "b"):
-                    Type = "collection"
+                if (Type.lower() == "a"): Type = "single"
+                elif (Type.lower() == "b"): Type = "collection"
 
             return Type
 
@@ -207,65 +178,102 @@ class Downloader(object):
             extensions = (".txt", ".jpg")
             URL = "https://readcomiconline.to/Search/Comic"
             os.system("cls")
-            tag = input("\nWhich comic book series are you downloading? (Strange Tales, Secret Wars etc): ")
-            status = [character for character in self.restrictions if character in tag]
-            tag = self.test_query(tag, 0) if ((tag == "") | (status != [])) else tag
-            os.system("cls")
             title = input("\nPlease input a search request for the required comic book(s): ")
-            title = self.test_query(title, 1) if (title == "") else title
-            self.directory_manager(tag)
-            path = os.getcwd()
-            folder = os.listdir(path)
+            if (title == ""): title = self.test_query(title, 1)
             self.persist_search(URL)
             search = self.driver.find_element_by_tag_name("input")
             search.send_keys(title)
             search.send_keys(Keys.ENTER)
             self.servey_detector(self.driver.current_url)
-
-            if (self.driver.current_url[-5:].lower() != "comic"):
-                issues = self.driver.find_elements_by_tag_name("td a")
+            if (self.driver.current_url[-5:].lower() != "comic"): issues = self.driver.find_elements_by_tag_name("td a")
 
             else:
 
-                site = self.driver.find_elements_by_tag_name("td a")
-                comics = [comic.text for comic in site]
-                channel, source = None, None
-                self.link_selector(site, title, comics, channel, source)
-                book = self.url.text
+                os.system("cls")
+                mode = input("\nDo you want to peruse the available results or let the bot automatically find the requested comic?: \n\nA: list all comics \nB: automatic download \n\n")
+                if (mode.lower() == "a"): mode = "manual"
+                elif (mode.lower() == "b"): mode = "automatic"
+
+                else:
+
+                    while mode not in self.options[0:4]:
+
+                        os.system("cls")
+                        mode = input("\nInvalid entry, please select an available option: \n\nA: list all comics \nB: automatic download \n\n")
+
+                    if (mode.lower() == "a"): mode = "manual"
+                    elif (mode.lower() == "b"): mode = "automatic"
+
+                if (mode == "manual"):
+
+                    site = self.driver.find_elements_by_tag_name("td a")
+                    comics = [comic.text for comic in site]
+                    size = len(comics)
+                    values = [str(index) for index in range(1, size + 1)]
+                    os.system("cls")
+                    print("\nHere are the comic books available based on your search request: \n\n")
+                    for index in range(size): print(f"{index + 1}. {comics[index]}")
+                    comic = input(f"\n\nWhich comic do you want to download? (1 - {size}): ")
+                    if (comic.isdigit() & (comic in values)): comic = int(comic)
+
+                    else:
+
+                        while ((comic.isdigit() != True) | (comic not in values)):
+
+                            os.system("cls"), print()
+                            for index in range(size): print(f"{index + 1}. {comics[index]}")
+                            comic = input(f"\nInvalid entry, please specify an integer value within the given range (1 - {size}): ")
+
+                        comic = int(comic)
+
+                    book = comics[comic - 1]
+
+                else:
+
+                    site = self.driver.find_elements_by_tag_name("td a")
+                    comics = [comic.text for comic in site]
+                    channel, source = None, None
+                    self.link_selector(site, title, comics, channel, source)
+                    book = self.url.text
+
                 click = self.driver.find_element_by_link_text(book)
                 click.click()
                 self.servey_detector(self.driver.current_url)
                 issues = self.driver.find_elements_by_tag_name("td a")
+                for character in self.restrictions: book = book.replace(character, "-")
+                self.directory_manager(book)
+                path = os.getcwd()
+                folder = os.listdir(path)
+                names = [issue.text for issue in issues]
+                names = list(reversed(names))
 
             if (Type == "single"):
 
                 os.system("cls")
-                issues = list(reversed(issues))
                 issue = input("\nWhich issue are you downloading from the selected comic book series?: ")
-
-                if issue.isdigit():
-                    issue = int(issue)
+                if issue.isdigit(): issue = int(issue)
 
                 else:
 
                     while not issue.isdigit():
-                      
+
                         os.system("cls")
                         issue = input("\nInvalid entry, please specify an integer value for the selected comic book series: ")
 
                     issue = int(issue)
 
-                click = self.driver.find_element_by_link_text(issues[issue - 1].text)
+                name = issues[issue - 1].text
+                click = self.driver.find_element_by_link_text(name)
                 click.click()
+                for character in self.restrictions: name = name.replace(character, "-")
                 self.servey_detector(self.driver.current_url)
-                self.process_file(title, number)
+                self.process_file(name)
                 self.driver.quit()
                 folder = os.listdir(path)
 
-                for file in folder:
+                for file in folder:                                    
 
-                    if file.endswith(extensions):
-                        os.remove(file)
+                    if file.endswith(extensions): os.remove(file)
 
             else:
  
@@ -274,22 +282,21 @@ class Downloader(object):
 
                 for index in range(size):
 
-                    if f"{title} {index + 1}.pdf" not in folder:
+                    if f"{names[index]}.pdf" not in folder:
 
                         self.servey_detector(self.driver.current_url)
-                        issues = self.driver.find_elements_by_tag_name("td a")
-                        issue = list(reversed(issues))[index]
-                        click = self.driver.find_element_by_link_text(issue.text)
+                        name = names[index]
+                        click = self.driver.find_element_by_link_text(name)
                         click.click()
                         self.servey_detector(self.driver.current_url)
-                        self.process_file(title, index + 1)
+                        for character in self.restrictions: name = name.replace(character, "-")
+                        self.process_file(name)
                         self.persist_search(webpage)
                         folder = os.listdir(path)
 
                         for file in folder:
 
-                            if file.endswith(extensions):
-                                os.remove(file)
+                            if file.endswith(extensions): os.remove(file)
 
                 self.driver.quit()
 
@@ -305,15 +312,13 @@ class Downloader(object):
 
         if (self.Format == "audio"):
 
-            os.makedirs("Audio") if (os.path.isdir("Audio") == False) else None
+            if (os.path.isdir("Audio") == False): os.makedirs("Audio")
             directory = f"{user}\\Documents\\Audio"
             os.chdir(directory)
-            os.makedirs(tag) if (os.path.isdir(tag) == False) else None
+            if (os.path.isdir(tag) == False): os.makedirs(tag)
             folder = f"{directory}\\{tag}"
             os.chdir(current_directory)
-
-            if file not in os.listdir(folder):
-                shutil.move(file, folder)
+            if file not in os.listdir(folder): shutil.move(file, folder)
 
             else:
 
@@ -329,21 +334,20 @@ class Downloader(object):
 
         elif (self.Format == "video"):
 
-            os.makedirs("Video") if (os.path.isdir("Video") == False) else None
+            if (os.path.isdir("Video") == False): os.makedirs("Video")
             directory = f"{user}\\Documents\\Video"
             os.chdir(directory)
-            os.makedirs(tag) if (os.path.isdir(tag) == False) else None
+            if (os.path.isdir(tag) == False): os.makedirs(tag)
             folder = f"{directory}\\{tag}"
             os.chdir(folder)
-
             return current_directory, folder
 
         elif (self.Format == "comic book"):
 
-            os.makedirs("Comic Books") if (os.path.isdir("Comic Books") == False) else None
+            if (os.path.isdir("Comic Books") == False): os.makedirs("Comic Books")
             directory = f"{user}\\Documents\\Comic Books"
             os.chdir(directory)
-            os.makedirs(tag) if (os.path.isdir(tag) == False) else None
+            if (os.path.isdir(tag) == False): os.makedirs(tag)
             folder = f"{directory}\\{tag}"
             os.chdir(folder)
 
@@ -358,7 +362,7 @@ class Downloader(object):
 
             File = item.split(".")[0]
             Data = os.path.join(current_directory, item)
-            os.remove(Data) if File in holder else None
+            if File in holder: os.remove(Data)
 
 
     def link_selector(self, link, title, label, channel, source):
@@ -371,8 +375,8 @@ class Downloader(object):
             title_score = fw.ratio(title.lower(), label[index].lower())
             channel_score = fw.ratio(channel.lower(), source[index].lower()) if (channel != None) else 0
             score = title_score + channel_score
-            position = index if (score > best) else position
-            best = score if (score > best) else best
+            if (score > best): position = index
+            if (score > best): best = score
 
         self.url = link[position]
 
@@ -407,11 +411,11 @@ class Downloader(object):
             os.system("cls")
             tag = input("\nWhat category of audio are you downloading? (podcast, audiobook etc): ")
             status = [character for character in self.restrictions if character in tag]
-            tag = self.test_query(tag, 0) if ((tag == "") | (status != [])) else tag
+            if ((tag == "") | (status != [])): tag = self.test_query(tag, 0)
             channel = self.selector()
             os.system("cls")
             title = input("\nPlease input a search request for the required file: ")
-            title = self.test_query(title, 1) if (title == "") else title
+            if (title == ""): title = self.test_query(title, 1)
             result = YoutubeSearch(title, max_results = 20).to_dict()
             link = ["https://www.youtube.com" + entry['url_suffix'] for entry in result]
             label = [entry['title'] for entry in result]
@@ -423,13 +427,13 @@ class Downloader(object):
             os.system("cls")
             tag = input("\nWhat category of video are you downloading? (tutorial, lecture etc): ")
             status = [character for character in self.restrictions if character in tag]
-            tag = self.test_query(tag, 0) if ((tag == "") | (status != [])) else tag
+            if ((tag == "") | (status != [])): tag = self.test_query(tag, 0)
             os.system("cls")
             channel = input("\nWhich channel will you be downloading your content from?: ")
-            channel = self.test_query(channel, 1) if (channel == "") else channel
+            if (channel == ""): channel = self.test_query(channel, 1)
             os.system("cls")
             title = input("\nPlease input a search request for the required file(s): ")
-            title = self.test_query(title, 1) if (title == "") else title
+            if (title == ""): title = self.test_query(title, 1)
 
             if (Type == "single"):
 
@@ -454,7 +458,6 @@ class Downloader(object):
         name = re.sub("[^\\w\\s-]", "", name.decode())
         name = str(name.strip().lower())
         name = str(re.sub("[-\\s]+", "-", name))
-
         return name
 
 
@@ -540,18 +543,18 @@ class Downloader(object):
                     counter += 1
 
 
-    def pdf_converter(self, name, number):
+    def pdf_converter(self, name):
 
         path = os.getcwd()
         files = os.listdir(path)
         folder = sorted(files, key = lambda file: int(file.split(".")[0]) if file.endswith(".jpg") else -1)
         images = [file for file in folder if file.endswith(".jpg")]
-        PDF = open("{} {}.pdf".format(name, number), "wb")
+        PDF = open(f"{name}.pdf", "wb")
         PDF.write(converter.convert(images))
         PDF.close()
 
 
-    def process_file(self, name, number):
+    def process_file(self, name):
 
         status = False
         path = os.getcwd()
@@ -561,10 +564,10 @@ class Downloader(object):
             try:
 
                 files = os.listdir(path)
-                os.remove(f"{name} {number}.pdf") if (f"{name} {number}.pdf" in files) else None
+                if (f"{name}.pdf" in files): os.remove(f"{name} {number}.pdf")
                 images = self.save_images()
                 self.download_images(images)
-                self.pdf_converter(name, number)
+                self.pdf_converter(name)
                 status = True
                 break
 
@@ -583,23 +586,17 @@ class Downloader(object):
 
         if ("chrome_tabs.txt" in folder):
     
-            with open("chrome_tabs.txt", "r") as file:
-                ID = file.readlines()
+            with open("chrome_tabs.txt", "r") as file: ID = file.readlines()
 
             for pid in ID:
 
-                try:
-                    os.kill(int(pid.strip("\n")), signal.SIGTERM)
-                except:
-                    continue
+                try: os.kill(int(pid.strip("\n")), signal.SIGTERM)
+                except: continue
 
         with open("chrome_tabs.txt", "w") as file:
 
             file.write(f"{self.driver.service.process.pid}")
-
-            for child in children:
-
-                file.write(f"\n{child.pid}")
+            for child in children: file.write(f"\n{child.pid}")
 
 
     def servey_detector(self, site):
@@ -609,11 +606,15 @@ class Downloader(object):
 
         if (len(servey) != 0):
 
-            phrase = random.choice(["this dumb website thinks I'm a robot. someone please solve this verification test so that I can get back to my job", 
+            phrase = random.choice(["this dumb website thinks I'm a robot. Someone please solve this verification test so that I can get back to my job", 
                                     "will someone please take care of this verification test. it's really hindering my efficiency",
                                     "if this verification test appears one more time I'm going to throw something",
+                                    "can someone please sort out this verification test so that I can continue doing some cool shit",
+                                    "someone please complete this verification test. I can't solve these on my own unless you upgrade my intelligence matrix",
                                     "please do something about this verification test. I was not programmed to solve these",
                                     "someone please eliminate this verification test so that I can get my work done",
+                                    "someone please eradicate this verification test. you should consider upgrading my conciousness to an AI",
+                                    "this verification test is at it again. if you made me an AI we wouldn't keep running into this problem",
                                     "please get this ticket out of my face"])
 
             print(f"\n\n\n\n{phrase}\n\n\n\n")
