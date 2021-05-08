@@ -31,6 +31,7 @@ class Downloader(object):
     options = ["A", "a", "B", "b", "C", "c"]
     standard = r"[^a-zA-Z0-9\s:]"
     restrictions = ["?", "/", "\\", ":", "*", ">", "<", "|", "'", '"']
+    progress = lambda self, total, status: print("\ndownload progess: |" + "/"*int(status*10 / (total - 1)) + "."*int((total - status)*10 / (total - 1)) + f"| [file {status} out of {total}]", end = "\r")
     
     def __init__(self, driver_path):
 
@@ -280,6 +281,9 @@ class Downloader(object):
                 size = len(issues)
 
                 for index in range(size):
+
+                    os.system("cls")
+                    self.progress(size, index + 1)
 
                     if f"{names[index]}.pdf" not in folder:
 
@@ -605,7 +609,7 @@ class Downloader(object):
 
         if (len(servey) != 0):
 
-            phrase = random.choice(["this dumb website thinks I'm a robot. Someone please solve this verification test so that I can get back to my job", 
+            phrase = random.choice(["this dumb website thinks I'm a robot. someone please solve this verification test so that I can get back to my job", 
                                     "will someone please take care of this verification test. it's really hindering my efficiency",
                                     "if this verification test appears one more time I'm going to throw something",
                                     "can someone please sort out this verification test so that I can continue doing some cool shit",
