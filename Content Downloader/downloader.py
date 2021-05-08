@@ -83,7 +83,6 @@ class Downloader(object):
 
             os.system("cls")
             preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
-
             if (preference.lower() == "a"): preference = "yes"
             elif (preference.lower() == "b"): channel = None
 
