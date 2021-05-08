@@ -563,7 +563,7 @@ class Downloader(object):
             try:
 
                 files = os.listdir(path)
-                if (f"{name}.pdf" in files): os.remove(f"{name} {number}.pdf")
+                if (f"{name}.pdf" in files): os.remove(f"{name}.pdf")
                 images = self.save_images()
                 self.download_images(images)
                 self.pdf_converter(name)
