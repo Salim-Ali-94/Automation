@@ -31,13 +31,27 @@ class Downloader(object):
     options = ["A", "a", "B", "b", "C", "c"]
     standard = r"[^a-zA-Z0-9\s:]"
     restrictions = ["?", "/", "\\", ":", "*", ">", "<", "|", "'", '"']
-    progress = lambda self, total, status: print("\ndownload progess: |" + "/"*int(status*10 / (total - 1)) + "."*int((total - status)*10 / (total - 1)) + f"| [file {status} out of {total}]", end = "\r")
-    
+    symbols = ["|", "\\", "-", "/"]
+    progress = lambda self, total, status, indicator = None: print("\ndownload progress: |" + "/"*int(10*status / total) + "."*(10 - int(10*status / total)) + (f"| [file {status + 1} out of {total}]" if (indicator == None) else "| [done]"))
+    animate = lambda self, total, status, symbol, indicator = None: print("\ndownload progress: |" + "/"*(int(10*status / total) if (status != total) else int(10*status / total) - 1) + f"{symbol}" + "."*(9 - int(10*status / total)) + (f"| [file {status + 1} out of {total}]" if (indicator == None) else "| [done]"))
+
     def __init__(self, driver_path):
 
         self.selector(None)
         self.directory = driver_path
         self.reset_driver()
+
+
+    def animator(self, total, status, indicator = None):
+
+        for symbol in self.symbols:
+
+            os.system("cls")
+            self.animate(total, status, symbol, indicator)
+            time.sleep(0.2)
+
+        os.system("cls")
+        self.progress(total, status, indicator)
 
 
     def reset_driver(self, status = True):
@@ -282,11 +296,9 @@ class Downloader(object):
 
                 for index in range(size):
 
-                    os.system("cls")
-                    self.progress(size, index + 1)
-
                     if f"{names[index]}.pdf" not in folder:
 
+                        self.animator(size, index)
                         self.servey_detector(self.driver.current_url)
                         name = names[index]
                         click = self.driver.find_element_by_link_text(name)
@@ -301,6 +313,7 @@ class Downloader(object):
 
                             if file.endswith(extensions): os.remove(file)
 
+                self.animator(size, size, 0)
                 self.driver.quit()
 
 
@@ -641,5 +654,4 @@ if __name__ == "__main__":
     path = "C:\\chrome_driver\\chromedriver"
     download = Downloader(path)
     download.search()
-    os.system("cls")
     print("\nDownload complete\n")
