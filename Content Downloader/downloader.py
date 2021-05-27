@@ -3,7 +3,6 @@ import shutil
 import signal
 import subprocess
 import os, re, sys
-import pyperclip
 import requests
 import random
 import warnings
