@@ -282,6 +282,7 @@ class Downloader(object):
         elif (self.category == "torrent"):
 
             url = "http://samcloud.tplinkdns.com:50000"
+            types = ["series", "show", "tv show"]
             getSites = "/getSites"
             getTorrents = "/getTorrents"
             Sites = requests.get(url + getSites)
@@ -294,7 +295,7 @@ class Downloader(object):
             qbt.login(self.qbit_admin, self.qbit_password)
             length = 0
 
-            if (tag.lower().rstrip() == "series"):
+            if (tag.lower().rstrip() in types):
 
                 if (field == "episode"):
 
