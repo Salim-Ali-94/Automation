@@ -36,9 +36,9 @@ class Downloader(object):
     progress = lambda self, total, status, indicator = None: print("\ndownload progress: |" + "/"*int(10*status / total) + "."*(10 - int(10*status / total)) + (f"| [file {status + 1} out of {total}]" if (indicator == None) else "| [done]"))
     animate = lambda self, total, status, symbol, indicator = None: print("\ndownload progress: |" + "/"*(int(10*status / total) if (status != total) else int(10*status / total) - 1) + f"{symbol}" + "."*(9 - int(10*status / total)) + (f"| [file {status + 1} out of {total}]" if (indicator == None) else "| [done]"))
 
-    def __init__(self, browser_path, qbit_user, qbit_password):
+    def __init__(self, browser_path, qbit_admin, qbit_password):
 
-        self.user = qbit_user
+        self.qbit_admin = qbit_admin
         self.qbit_password = qbit_password
         self.directory = browser_path
         self.reset_browser()
@@ -291,7 +291,7 @@ class Downloader(object):
             complete, count, counter = False, initial, initial
             folder = self.directory_manager(tag, title = title)
             qbt = Client("http://127.0.0.1:8080/")
-            qbt.login(self.user, self.qbit_password)
+            qbt.login(self.qbit_admin, self.qbit_password)
             length = 0
 
             if (tag.lower().rstrip() == "series"):
