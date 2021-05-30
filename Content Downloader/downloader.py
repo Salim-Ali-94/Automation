@@ -36,8 +36,9 @@ class Downloader(object):
     progress = lambda self, total, status, indicator = None: print("\ndownload progress: |" + "/"*int(10*status / total) + "."*(10 - int(10*status / total)) + (f"| [file {status + 1} out of {total}]" if (indicator == None) else "| [done]"))
     animate = lambda self, total, status, symbol, indicator = None: print("\ndownload progress: |" + "/"*(int(10*status / total) if (status != total) else int(10*status / total) - 1) + f"{symbol}" + "."*(9 - int(10*status / total)) + (f"| [file {status + 1} out of {total}]" if (indicator == None) else "| [done]"))
 
-    def __init__(self, browser_path, qbit_admin, qbit_password):
+    def __init__(self, browser_path, qbit_admin, qbit_password, mode = 0):
 
+        self.mode = mode
         self.qbit_admin = qbit_admin
         self.qbit_password = qbit_password
         self.directory = browser_path
@@ -156,10 +157,9 @@ class Downloader(object):
                 if (field.lower().rstrip() == "a"): field = "single"
                 elif (field.lower().rstrip() == "b"): field = "collection"
 
-        elif (self.category == "torrent"):
+        elif ((self.category == "torrent") & (indicator == 0)):
 
             os.system("cls")
-            subprocess.Popen(["C:\\Program Files\\qBittorrent\\qbittorrent.exe"], shell = True)
             field = input("\nAre you downloading a required season, an entire series or only one episode: \n\nA: single episode \nB: one season \nC: all seasons \n\n")
             if (field.lower().rstrip() == "a"): field = "episode"
             elif (field.lower().rstrip() == "b"): field = "season"
@@ -203,7 +203,7 @@ class Downloader(object):
 
             try:
 
-                name = name.split(".")[0] + ".mp3"
+                name = f"{data['title']}" + ".mp3"
                 self.directory_manager(tag, name)
 
             except: 
@@ -755,10 +755,11 @@ class Downloader(object):
 
         elif (self.category == "torrent"):
 
-            files = ["series", "show", "tv show"]
-            field = self.selector()
+            subprocess.Popen(["C:\\Program Files\\qBittorrent\\qbittorrent.exe"], shell = True)
+            files, field = ["series", "show", "tv show"], None
             os.system("cls")
             tag = input("\nWhat category of torrent file(s) are you downloading? (movies, series etc): ")
+            if (tag.lower().rstrip() in files): field = self.selector(0)
             status = [character for character in self.restrictions if character in tag]
             if ((tag == "") | (status != [])): tag = self.test_query(tag, 0)
             os.system("cls")
@@ -1173,7 +1174,7 @@ class Downloader(object):
         Links, Titles = links.copy(), titles.copy()
         Seeders, Leechers = seeders.copy(), leechers.copy()
         Sizes, Sites = sizes.copy(), sites.copy()
-        size, test, check = len(titles), [], False
+        size, test, check, skip = len(titles), [], False, False
         good_quality = ["720", "x265", "x264"]
         other_quality = ["2160", "1080", "480"]
         bad_quality = ["hdcam", 
@@ -1214,9 +1215,13 @@ class Downloader(object):
                         Links.pop(address), Titles.pop(address)
                         Seeders.pop(address), Leechers.pop(address)
                         Sizes.pop(address), Sites.pop(address)
+                        skip = True
                         break
 
-                break
+                if (skip == True): 
+
+                    skip = False
+                    break
 
             if (index == size - 1):
 
@@ -1227,9 +1232,10 @@ class Downloader(object):
                         if quality in title:
 
                             check = True
+                            skip = True
                             break
 
-                    break
+                    if (skip == True): break
         
         if (check == True):
     
