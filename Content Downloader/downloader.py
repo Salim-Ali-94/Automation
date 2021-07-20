@@ -77,29 +77,29 @@ class Downloader(object):
             os.system("cls")
             category = input("\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \nD: torrent \nE: animated show \n\n")
 
-            while category.lower().rstrip() not in self.options:
+            while category.lower().rstrip().lstrip() not in self.options:
 
                 os.system("cls")
                 category = input("\nInvalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \nD: torrent \nE: animated show \n\n")
 
-            if (category.lower().rstrip() == "a"): self.category = "audio"
-            elif (category.lower().rstrip() == "b"): self.category = "video"
-            elif (category.lower().rstrip() == "c"): self.category = "comic book"
-            elif (category.lower().rstrip() == "d"): self.category = "torrent"
-            elif (category.lower().rstrip() == "e"): self.category = "animation"
+            if (category.lower().rstrip().lstrip() == "a"): self.category = "audio"
+            elif (category.lower().rstrip().lstrip() == "b"): self.category = "video"
+            elif (category.lower().rstrip().lstrip() == "c"): self.category = "comic book"
+            elif (category.lower().rstrip().lstrip() == "d"): self.category = "torrent"
+            elif (category.lower().rstrip().lstrip() == "e"): self.category = "animation"
 
         elif (self.category == "audio"):
 
             os.system("cls")
             preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
 
-            while preference.lower().rstrip() not in self.options[0:4]:
+            while preference.lower().rstrip().lstrip() not in self.options[0:4]:
 
                 os.system("cls")
                 preference = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-            if (preference.lower().rstrip() == "a"): preference = "yes"
-            elif (preference.lower().rstrip() == "b"): channel = None
+            if (preference.lower().rstrip().lstrip() == "a"): preference = "yes"
+            elif (preference.lower().rstrip().lstrip() == "b"): channel = None
             os.system("cls")
             if (preference == "yes"): channel = input("\nPlease enter a channel to search for your content: ")
             return channel
@@ -109,13 +109,13 @@ class Downloader(object):
             os.system("cls")
             field = input("\nAre you downloading a playlist or a single file: \n\nA: single video \nB: playlist \n\n")
 
-            while field.lower().rstrip() not in self.options[0:4]:
+            while field.lower().rstrip().lstrip() not in self.options[0:4]:
 
                 os.system("cls")
                 field = input("\nInvalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
 
-            if (field.lower().rstrip() == "a"): field = "single"
-            elif (field.lower().rstrip() == "b"): field = "playlist"
+            if (field.lower().rstrip().lstrip() == "a"): field = "single"
+            elif (field.lower().rstrip().lstrip() == "b"): field = "playlist"
             return field
 
         elif (self.category == "comic book"):
@@ -123,13 +123,13 @@ class Downloader(object):
             os.system("cls")
             field = input("\nAre you downloading an entire volume from a specific comic book title or a single issue: \n\nA: single issue \nB: one volume \n\n")
 
-            while field.lower().rstrip() not in self.options[0:4]:
+            while field.lower().rstrip().lstrip() not in self.options[0:4]:
 
                 os.system("cls")
                 field = input("\nInvalid entry, please select an available option: \n\nA: single issue \nB: one volume \n\n")
  
-            if (field.lower().rstrip() == "a"): field = "single"
-            elif (field.lower().rstrip() == "b"): field = "volume"
+            if (field.lower().rstrip().lstrip() == "a"): field = "single"
+            elif (field.lower().rstrip().lstrip() == "b"): field = "volume"
             return field
 
         elif (self.category == "torrent"):
@@ -137,14 +137,14 @@ class Downloader(object):
             os.system("cls")
             field = input("\nAre you downloading a particular season, multiple seasons or one episode: \n\nA: single episode \nB: one season \nC: multiple seasons \n\n")
 
-            while field.lower().rstrip() not in self.options[0:6]:
+            while field.lower().rstrip().lstrip() not in self.options[0:6]:
 
                 os.system("cls")
                 field = input("\nInvalid entry, please select an available option: \n\nA: single episode \nB: one season \nC: multiple seasons \n\n")
 
-            if (field.lower().rstrip() == "a"): field = "episode"
-            elif (field.lower().rstrip() == "b"): field = "season"
-            elif (field.lower().rstrip() == "c"): field = "series"
+            if (field.lower().rstrip().lstrip() == "a"): field = "episode"
+            elif (field.lower().rstrip().lstrip() == "b"): field = "season"
+            elif (field.lower().rstrip().lstrip() == "c"): field = "series"
             return field
 
 
@@ -242,7 +242,7 @@ class Downloader(object):
             qbt.login(self.qbit_admin, self.qbit_password)
             length = len(title)
 
-            if (tag.lower().rstrip() in types[0]):
+            if (tag.lower().rstrip().lstrip() in types[0]):
 
                 for index in range(length):
 
@@ -381,7 +381,7 @@ class Downloader(object):
 
                                     for file in files:
 
-                                        if number.lower() in file.lower().rstrip():
+                                        if number.lower() in file.lower().rstrip().lstrip():
 
                                             skip = True
                                             break
@@ -550,7 +550,7 @@ class Downloader(object):
         url = "http://samcloud.tplinkdns.com:50000"
         getTorrents = "/getTorrents"
         if (indicator == 0): test = " ".join(title.lower().split()[0:-1]) + " " + title.lower().split()[-1].replace(title.lower().split()[-1].split("s")[-1], "").replace("s", "season ") + str(int(title.lower().split()[-1].split("s")[-1]))
-        elif (indicator == 1): test = title.lower().rstrip() + " season " + str(counter)
+        elif (indicator == 1): test = title.lower().rstrip().lstrip() + " season " + str(counter)
         search_link = "?search_key=" + test + " complete" + "&site="
         results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
         width = len(results)
@@ -579,7 +579,7 @@ class Downloader(object):
 
     def check_page(self, folder):
 
-        header = folder.split("\\")[-1].replace("_", " ").replace("-", " ").replace("anime", "").rstrip()
+        header = folder.split("\\")[-1].replace("_", " ").replace("-", " ").replace("anime", "").rstrip().lstrip()
         labels, links = self.anime_search(header)
         response = self.persist_search(links[0])
         anchors = self.driver.find_elements_by_css_selector("#catlist-listview li a")
@@ -670,8 +670,8 @@ class Downloader(object):
             os.system("cls")
             choose = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no\n\n")
 
-        if (choose.lower().rstrip() == "a"): choose = True
-        elif (choose.lower().rstrip() == "b"): choose = False
+        if (choose.lower().rstrip().lstrip() == "a"): choose = True
+        elif (choose.lower().rstrip().lstrip() == "b"): choose = False
 
         if (choose == True): 
 
@@ -681,14 +681,14 @@ class Downloader(object):
             for index in range(len(label)): print(f"{index + 1}. {label[index]} (duration: {length[index]}, channel: {channel[index]})")  if (len(length) > 0) else None
             number = input(f"\nWhich file are you downloading? (1 - {len(label)}): ")
 
-            while number.rstrip() not in self.numbers(1, len(label)):
+            while number.rstrip().lstrip() not in self.numbers(1, len(label)):
 
                 os.system("cls"), print()
                 for index in range(len(label)): print(f"{index + 1}. {label[index]} (channel: {channel[index]})") if (len(length) == 0) else None
                 for index in range(len(label)): print(f"{index + 1}. {label[index]} (duration: {length[index]}, channel: {channel[index]})")  if (len(length) > 0) else None
                 number = input(f"\nInvalid entry, please select a value from the list above (1 - {len(label)}): ")
 
-            number = int(number.rstrip())
+            number = int(number.rstrip().lstrip())
             url = link[number - 1]
 
         else:
@@ -876,8 +876,8 @@ class Downloader(object):
 
         for index in range(size):
             
-            title_score = fw.ratio(title.lower().rstrip(), label[index].lower().rstrip())
-            channel_score = fw.ratio(channel.lower().rstrip(), anchor[index].lower().rstrip()) if (channel != None) else 0
+            title_score = fw.ratio(title.lower().rstrip().lstrip(), label[index].lower().rstrip().lstrip())
+            channel_score = fw.ratio(channel.lower().rstrip().lstrip(), anchor[index].lower().rstrip().lstrip()) if (channel != None) else 0
             score = title_score + channel_score
             if (score > best): position, best = index, score
 
@@ -938,13 +938,13 @@ class Downloader(object):
             os.system("cls")
             preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
 
-            while preference.lower().rstrip() not in self.options[0:4]:
+            while preference.lower().rstrip().lstrip() not in self.options[0:4]:
 
                 os.system("cls")
                 preference = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-            if (preference.lower().rstrip() == "a"): preference = True
-            elif (preference.lower().rstrip() == "b"): preference = False
+            if (preference.lower().rstrip().lstrip() == "a"): preference = True
+            elif (preference.lower().rstrip().lstrip() == "b"): preference = False
             os.system("cls")
             if (preference == True): channel = input("\nWhich channel will you be downloading your content from?: ")
             if (channel == ""): channel = self.test_query(channel, 1)
@@ -988,7 +988,7 @@ class Downloader(object):
                 search.send_keys(title)
                 search.send_keys(Keys.ENTER)
 
-                if (self.driver.current_url[-5:].lower().rstrip() != "comic"): 
+                if (self.driver.current_url[-5:].lower().rstrip().lstrip() != "comic"): 
 
                     issues = self.driver.find_elements_by_tag_name("td a")
 
@@ -1002,8 +1002,8 @@ class Downloader(object):
                         os.system("cls")
                         select = input("\nInvalid entry, please select an available option: \n\nA: list all comics \nB: automatic download \n\n")
 
-                    if (select.lower().rstrip() == "a"): select = "manual"
-                    elif (select.lower().rstrip() == "b"): select = "automatic"
+                    if (select.lower().rstrip().lstrip() == "a"): select = "manual"
+                    elif (select.lower().rstrip().lstrip() == "b"): select = "automatic"
 
                     if (select == "manual"):
 
@@ -1016,7 +1016,7 @@ class Downloader(object):
                         if (size > 1): comic = input(f"\n\nWhich comic do you want to download? (1 - {size}): ")
                         else: print(f"\n\n{comics[0]} will now be downloaded: \n\n")
 
-                        while comic.lower().rstrip() not in self.numbers(1, size):
+                        while comic.lower().rstrip().lstrip() not in self.numbers(1, size):
 
                             os.system("cls"), print()
                             for index in range(size): print(f"{index + 1}. {comics[index]}")
@@ -1084,9 +1084,9 @@ class Downloader(object):
                     os.system("cls")
                     add = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-                if (add.lower().rstrip() == "a"): add = "yes"
-                elif (add.lower().rstrip() == "b"): add = "no"
-                if (add.lower().rstrip() == "no"): done = True
+                if (add.lower().rstrip().lstrip() == "a"): add = "yes"
+                elif (add.lower().rstrip().lstrip() == "b"): add = "no"
+                if (add.lower().rstrip().lstrip() == "no"): done = True
 
             return issues, paths, headers, fields
 
@@ -1103,7 +1103,7 @@ class Downloader(object):
             choose, done = "b", False
             count, add = 1, "no"
 
-            if tag.lower().rstrip() in types[0]:
+            if tag.lower().rstrip().lstrip() in types[0]:
 
                 titles, fields = [], []
                 begining, end = [], []
@@ -1119,7 +1119,7 @@ class Downloader(object):
 
                     if (field == "episode"):
 
-                        while check.lower().rstrip() not in self.episodes:
+                        while check.lower().rstrip().lstrip() not in self.episodes:
 
                             os.system("cls")
                             title = input("\nInvalid format, the specified file must be provided as follows; [title] S[0x]E[0y]: ")
@@ -1127,19 +1127,19 @@ class Downloader(object):
 
                     elif (field == "season"):
 
-                        while check.lower().rstrip() not in self.seasons:
+                        while check.lower().rstrip().lstrip() not in self.seasons:
 
                             os.system("cls")
                             title = input("\nInvalid format, the specified file must be provided as follows; [title] S[0x]: ")
                             check = title.split()[-1]
 
-                    while choose.lower().rstrip() not in self.options[0:4]:
+                    while choose.lower().rstrip().lstrip() not in self.options[0:4]:
 
                         os.system("cls")
                         choose = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-                    if (choose.lower().rstrip() == "a"): choose = False
-                    elif (choose.lower().rstrip() == "b"): choose = True
+                    if (choose.lower().rstrip().lstrip() == "a"): choose = False
+                    elif (choose.lower().rstrip().lstrip() == "b"): choose = True
                     os.system("cls")
                     if ((field == "series") & (choose == True)): start, stop = input("\nFrom what season are you starting to download your show?: "), input("\nUp until which season are you downloading your show? (use 0 if you want to download all seasons until the end of the series): ")
                     elif ((field == "season") & (choose == True)): start, stop = input("\nFrom what episode are you starting to download your show?: "), input("\nUp until which episode are you downloading your show? (use 0 if you want to download all episodes until the end of the season): ")
@@ -1147,7 +1147,7 @@ class Downloader(object):
                     first = int(start) if start.isdigit() else 1
                     last = int(stop) if stop.isdigit() else 0
 
-                    while (((last < first) & (last != 0)) | (start.lower().rstrip() not in self.numbers(0, 100)) | (stop.lower().rstrip() not in self.numbers(0, 100))):
+                    while (((last < first) & (last != 0)) | (start.lower().rstrip().lstrip() not in self.numbers(0, 100)) | (stop.lower().rstrip().lstrip() not in self.numbers(0, 100))):
 
                         os.system("cls")
                         if (field == "series"): print(f"\nInvalid entry, the last season must be a positive value larger than the first season: \n")
@@ -1162,20 +1162,20 @@ class Downloader(object):
                     os.system("cls")
                     add = input("\nAre you adding more shows to the download schedule?: \n\nA: yes \nB: no \n\n")
 
-                    while add.lower().rstrip() not in self.options[0:4]:
+                    while add.lower().rstrip().lstrip() not in self.options[0:4]:
 
                         os.system("cls")
                         add = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-                    if (add.lower().rstrip() == "a"): add = "yes"
-                    elif (add.lower().rstrip() == "b"): add = "no"
-                    if (add.lower().rstrip() == "no"): done = True
+                    if (add.lower().rstrip().lstrip() == "a"): add = "yes"
+                    elif (add.lower().rstrip().lstrip() == "b"): add = "no"
+                    if (add.lower().rstrip().lstrip() == "no"): done = True
                     titles.append(title), fields.append(field)
                     begining.append(start), end.append(stop)
                     choose, count = "b", count + 1
                     start, stop = "1", "0"
 
-            elif (tag.lower().rstrip() in types[1]):
+            elif (tag.lower().rstrip().lstrip() in types[1]):
 
                 titles, done = [], False
 
@@ -1193,9 +1193,9 @@ class Downloader(object):
                         os.system("cls")
                         add = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-                    if (add.lower().rstrip() == "a"): add = "yes"
-                    elif (add.lower().rstrip() == "b"): add = "no"
-                    if (add.lower().rstrip() == "no"): done = True
+                    if (add.lower().rstrip().lstrip() == "a"): add = "yes"
+                    elif (add.lower().rstrip().lstrip() == "b"): add = "no"
+                    if (add.lower().rstrip().lstrip() == "no"): done = True
                     if (title == ""): title = self.test_query(title, 1)
                     begining.append("1"), end.append("0")
                     titles.append(title), fields.append(None)
@@ -1222,7 +1222,7 @@ class Downloader(object):
                 os.system("cls")
                 title = input(f"\nPlease specify a title for the {self.ordinal(count)} show that you are searching for: ")
                 if (title == ""): title = self.test_query(title, 1)
-                text = title.lower().rstrip()
+                text = title.lower().rstrip().lstrip()
                 labels, anchors = self.anime_search(title)
                 length, title, site, header = len(anchors), [], [], []
                 os.system("cls")
@@ -1233,20 +1233,20 @@ class Downloader(object):
                     for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
                     select = input("\n\nDo you want to download all of the seasons?: \n\nA: yes \nB: no \n\n")
 
-                    while select.lower().rstrip() not in self.options[0:4]:
+                    while select.lower().rstrip().lstrip() not in self.options[0:4]:
 
                         os.system("cls"), print()
                         for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
                         select = input("\nInvalid entry, please select an available option, are you downloading all the seasons?: \n\nA: yes \nB: no \n\n")
 
-                    if (select.lower().rstrip() == "a"): select = True
-                    elif (select.lower().rstrip() == "b"): select = False
+                    if (select.lower().rstrip().lstrip() == "a"): select = True
+                    elif (select.lower().rstrip().lstrip() == "b"): select = False
 
                     if (select == False):
 
                         start = input("\nFrom what season are you starting to download your show?: ")
 
-                        while start.lower().rstrip() not in self.numbers(1, length):
+                        while start.lower().rstrip().lstrip() not in self.numbers(1, length):
 
                             os.system("cls"), print()
                             for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
@@ -1254,7 +1254,7 @@ class Downloader(object):
 
                         stop = input("\nUp until which season are you downloading your show? (if you only want to download one season, enter the same value as the starting season): ")
 
-                        while stop.lower().rstrip() not in self.numbers(int(start), length):
+                        while stop.lower().rstrip().lstrip() not in self.numbers(int(start), length):
 
                             os.system("cls"), print()
                             for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
@@ -1263,14 +1263,14 @@ class Downloader(object):
                         first = int(start) if start.isdigit() else 1
                         last = int(stop) if stop.isdigit() else 0
 
-                        while ((last < first) | (start.lower().rstrip() not in self.numbers(1, length)) | (stop.lower().rstrip() not in self.numbers(int(start), length))):
+                        while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, length)) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), length))):
 
                             os.system("cls")
                             print(f"\nInvalid entry, the last season must be a value larger than the first season and within the given range (1 - {length}): \n")
                             for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
                             start = input(f"\nChoose which season to start downloading {text.title()} from (1 - {length}): ")
 
-                            while start.lower().rstrip() not in self.numbers(1, length):
+                            while start.lower().rstrip().lstrip() not in self.numbers(1, length):
 
                                 os.system("cls"), print()
                                 for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
@@ -1278,7 +1278,7 @@ class Downloader(object):
 
                             stop = input(f"\nChoose the last season to download from the series ({start} - {length}): ")
 
-                            while first.lower().rstrip() not in self.numbers(int(start), length):
+                            while first.lower().rstrip().lstrip() not in self.numbers(int(start), length):
 
                                 os.system("cls"), print()
                                 for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
@@ -1308,14 +1308,14 @@ class Downloader(object):
                         for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
                         choose = input(f"\n\nDo you want to download all of the episodes?: \n\nA: yes \nB: no \n\n")
 
-                        while choose.lower().rstrip() not in self.options[0:4]:
+                        while choose.lower().rstrip().lstrip() not in self.options[0:4]:
 
                             os.system("cls"), print()
                             for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
                             choose = input(f"\nInvalid entry, please select an available option, are you downloading the entire season of {names[index]}: \n\nA: yes \nB: no \n\n")
 
-                        if (choose.lower().rstrip() == "a"): choose = True
-                        elif (choose.lower().rstrip() == "b"): choose = False
+                        if (choose.lower().rstrip().lstrip() == "a"): choose = True
+                        elif (choose.lower().rstrip().lstrip() == "b"): choose = False
 
                         if (choose == False):
 
@@ -1323,7 +1323,7 @@ class Downloader(object):
                             for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
                             start = input(f"\n\nFrom what episode are you starting to download {names[index]}?: ")
 
-                            while start.lower().rstrip() not in self.numbers(1, len(episodes)):
+                            while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
 
                                 os.system("cls"), print()
                                 for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
@@ -1331,7 +1331,7 @@ class Downloader(object):
 
                             stop = input(f"\nUp until which episode are you downloading this season? (if you only want to download one episode, enter the same value as the starting episode): ")
 
-                            while stop.lower().rstrip() not in self.numbers(int(start), len(episodes)):
+                            while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
 
                                 os.system("cls"), print()
                                 for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
@@ -1340,7 +1340,7 @@ class Downloader(object):
                             first = int(start) if start.isdigit() else 1
                             last = int(stop) if stop.isdigit() else 0
 
-                            while ((last < first) | (start.lower().rstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip() not in self.numbers(int(start), len(episodes)))):
+                            while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)))):
 
                                 os.system("cls")
                                 print(f"\nInvalid entry, the last episode must be a value larger than the first episode and within the given range (1 - {len(episodes)}): \n")
@@ -1348,7 +1348,7 @@ class Downloader(object):
 
                                 start = input(f"\nChoose which episode to start downloading {names[index]} from (1 - {len(episodes)}): ")
 
-                                while start.lower().rstrip() not in self.numbers(1, len(episodes)):
+                                while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
 
                                     os.system("cls"), print()
                                     for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
@@ -1356,7 +1356,7 @@ class Downloader(object):
 
                                 stop = input(f"\nChoose the last episode to download from this season ({start} - {len(episodes)}): ")
 
-                                while stop.lower().rstrip() not in self.numbers(int(start), len(episodes)):
+                                while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
 
                                     os.system("cls"), print()
                                     for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
@@ -1388,14 +1388,14 @@ class Downloader(object):
                     for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
                     choose = input("\n\nDo you want to download all of the episodes?: \n\nA: yes \nB: no \n\n")
 
-                    while choose.lower().rstrip() not in self.options[0:4]:
+                    while choose.lower().rstrip().lstrip() not in self.options[0:4]:
 
                         os.system("cls"), print()
                         for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
                         choose = input("\n\nInvalid entry, please select an available option, are you downloading all the episodes?: \n\nA: yes \nB: no \n\n")
 
-                    if (choose.lower().rstrip() == "a"): choose = True
-                    elif (choose.lower().rstrip() == "b"): choose = False
+                    if (choose.lower().rstrip().lstrip() == "a"): choose = True
+                    elif (choose.lower().rstrip().lstrip() == "b"): choose = False
                     os.system("cls")
 
                     if (choose == False):
@@ -1404,14 +1404,14 @@ class Downloader(object):
                         for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
                         start = input(f"\nFrom what episode are you starting to download {label}?: ")
 
-                        while start.lower().rstrip() not in self.numbers(1, len(episodes)):
+                        while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
 
                             os.system("cls")
                             start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
 
                         stop = input("\nUp until which episode are you downloading this season? (if you only want to download one episode, enter the same value as the starting episode): ")
 
-                        while stop.lower().rstrip() not in self.numbers(int(start), len(episodes)):
+                        while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
 
                             os.system("cls")
                             stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
@@ -1420,14 +1420,14 @@ class Downloader(object):
                     first = int(start) if start.isdigit() else 1
                     last = int(stop) if stop.isdigit() else 0
 
-                    while ((last < first) | (start.lower().rstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip() not in self.numbers(int(start), len(episodes)))):
+                    while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)))):
 
                         os.system("cls")
                         print(f"\nInvalid entry, the last episode must be a value larger than the first episode and within the given range (1 - {len(episodes)}): \n")
                         for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
                         start = input(f"\nChoose which episode to start downloading {label} from (1 - {len(episodes)}): ")
 
-                        while start.lower().rstrip() not in self.numbers(1, len(episodes)):
+                        while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
 
                             os.system("cls"), print()
                             for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
@@ -1435,7 +1435,7 @@ class Downloader(object):
 
                         stop = input(f"\nChoose the last episode to download from this season ({start} - {len(episodes)}): ")
 
-                        while stop.lower().rstrip() not in self.numbers(int(start), len(episodes)):
+                        while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
 
                             os.system("cls"), print()
                             for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
@@ -1461,14 +1461,14 @@ class Downloader(object):
                 os.system("cls")
                 add = input("\nAre you adding more shows to the download schedule?: \n\nA: yes \nB: no \n\n")
 
-                while add.lower().rstrip() not in self.options[0:4]:
+                while add.lower().rstrip().lstrip() not in self.options[0:4]:
 
                     os.system("cls")
                     add = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-                if (add.lower().rstrip() == "a"): add = "yes"
-                elif (add.lower().rstrip() == "b"): add = "no"
-                if (add.lower().rstrip() == "no"): done = True
+                if (add.lower().rstrip().lstrip() == "a"): add = "yes"
+                elif (add.lower().rstrip().lstrip() == "b"): add = "no"
+                if (add.lower().rstrip().lstrip() == "no"): done = True
                 choose, count = "b", count + 1
                 start, stop = "1", "0"
 
@@ -1484,7 +1484,7 @@ class Downloader(object):
         seed, leech, byte, torrent, tag = [], [], [], [], []
         links, titles, seeders, leechers, sizes, sites, check = self.filter_torrents(links, titles, seeders, leechers, sizes, sites)
         size, flag = len(links), False
-        target = title.lower().rstrip()
+        target = title.lower().rstrip().lstrip()
 
         for index in range(size):
 
@@ -1494,8 +1494,8 @@ class Downloader(object):
             fetch_link = "?link=" + links[index] + append + sites[index]
             response = requests.get(url + getData + fetch_link)
             compare = " ".join(titles[index].split("."))
-            score = fw.ratio(compare.lower().rstrip(), target)
-            if (score < 34): score, flag = self.test_similarity(compare.lower().rstrip(), target), True
+            score = fw.ratio(compare.lower().rstrip().lstrip(), target)
+            if (score < 34): score, flag = self.test_similarity(compare.lower().rstrip().lstrip(), target), True
 
             if (((score > 50) & (response.json() != "Invalid Request") & (flag == True)) |
                 ((score >= 34) & (response.json() != "Invalid Request") & (flag == False))):
@@ -1603,7 +1603,7 @@ class Downloader(object):
 
                 for quality in bad_quality:
 
-                    if quality in word.lower().rstrip():
+                    if quality in word.lower().rstrip().lstrip():
 
                         Links.pop(address), Titles.pop(address)
                         Seeders.pop(address), Leechers.pop(address)
@@ -1635,7 +1635,7 @@ class Downloader(object):
 
                 for quality in other_quality:
 
-                    if quality in Titles[index].lower().rstrip():
+                    if quality in Titles[index].lower().rstrip().lstrip():
 
                         address = titles.index(Titles[index])
                         links.pop(address), titles.pop(address)
@@ -1676,7 +1676,7 @@ class Downloader(object):
 
         title = ucd.normalize("NFKD", value).encode("ascii", "ignore")
         title = re.sub("[^\\w\\s-]", "", title.decode())
-        title = str(title.strip().lower().rstrip())
+        title = str(title.strip().lower().rstrip().lstrip())
         title = str(re.sub("[-\\s]+", "-", title))
         return title
 
