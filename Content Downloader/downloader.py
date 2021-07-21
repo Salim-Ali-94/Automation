@@ -518,8 +518,8 @@ class Downloader(object):
 
                                     if ((file_name not in os.listdir(subfolder)) & (test not in os.listdir(subfolder))):
 
-                                        subprocess.Popen(f"python crawler.py -i {link[index][element][item]} -o {folder}", shell = True)
-                                        self.monitor_download(link[index][element][item], folder)
+                                        subprocess.Popen(f"python crawler.py -i {link[index][element][item]} -o {subfolder}", shell = True)
+                                        self.monitor_download(link[index][element][item], subfolder)
                                         os.rename(subfolder + "\\" + file_name, subfolder + "\\" + test)
                                         break
 
