@@ -169,7 +169,7 @@ class Downloader(object):
                                                  "preferredquality": "192"}]}
             with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
             try: self.directory_manager(tag, file_name + ".mp3")
-            except Exception as E: print("\n\n\n\n", E, "\n\n\n\n"), self.directory_manager(tag, self.slugify(file_name) + ".mp3")
+            except: self.directory_manager(tag, self.slugify(file_name) + ".mp3")
 
         elif (self.category == "video"):
 
@@ -186,25 +186,20 @@ class Downloader(object):
 
             extensions = (".txt", ".jpg")
             issues, paths, headers, fields = self.extractor()
-            path = os.getcwd()
-            folder = os.listdir(path)
-            length = len(issues)
+            folder = os.listdir(os.getcwd())
 
-            for index in range(length):
+            for index in range(len(issues)):
 
                 path = paths[index]
                 titles = headers[index]
                 links = issues[index]
                 folder = os.listdir(path)
-                size = len(issues[index])
-                os.chdir(path)
-                os.system("cls")
+                os.chdir(path), os.system("cls")
                 for file in folder: os.remove(file) if file.endswith(extensions) else None
 
                 if (fields[index] == "single"):
 
-                    if (length > 1): print(f"\nCurrently downloading {titles}, (comic book {index + 1} out of {length})")
-                    else: print(f"\nCurrently downloading {titles}")
+                    print(f"\nCurrently downloading {titles} ({index + 1} / {len(issues)}) \n\n")
                     self.persist_search(links)
                     for character in self.restrictions: titles = titles.replace(character, "-")
                     self.process_file(titles)
@@ -213,12 +208,12 @@ class Downloader(object):
 
                 else:
 
-                    for address in range(size):
+                    for address in range(len(issues[index])):
 
                         if f"{titles[address]}.pdf" not in folder:
 
-                            if (length > 1): print(f"\nCurrently downloading {titles[address]}, comic book {address + 1} out of {size} ({index + 1} / {length})")
-                            else: print(f"\nCurrently downloading {titles[address]}, comic book {address + 1} out of {size}")
+                            if (len(issues) > 1): print(f"\nCurrently downloading {titles[address]} [{address + 1} / {len(issues[index])} ({index + 1} / {len(issues)})] \n\n")
+                            else: print(f"\nCurrently downloading {titles[address]} ({address + 1} / {len(issues[index])}) \n\n")
                             header = titles[address]
                             link = links[address]
                             self.persist_search(link)
@@ -240,11 +235,10 @@ class Downloader(object):
             complete, torrent = False, ""
             qbt = Client("http://127.0.0.1:8080/")
             qbt.login(self.qbit_admin, self.qbit_password)
-            length = len(title)
 
             if (tag.lower().rstrip().lstrip() in types[0]):
 
-                for index in range(length):
+                for index in range(len(title)):
 
                     data, sites, done, skip = [], [], False, False
                     complete, count, counter, torrent = False, int(initial[index]), int(initial[index]), ""
@@ -255,8 +249,7 @@ class Downloader(object):
                         search_link = "?search_key=" + title[index] + "&site="
                         results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
                         pages = [result[1] for result in results]
-                        width = len(results)
-                        for result in range(width): sites += [pages[result] for address in range(len(results[result][0]))]
+                        for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
                         for result in results: data += result[0]
                         titles = [result["name"] for result in data]
                         seeders = [result["seeds"] for result in data]
@@ -273,12 +266,11 @@ class Downloader(object):
 
                             search_link = "?search_key=" + title[index] + " complete" + "&site="
                             if (torrent != "empty"): results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
-                            width = len(results)
                             data, sites = [], []
                             complete, skip = False, False
-                            if (width == 0): width, torrent, results = self.alternative(qbt, title[index], folder, websites, 0)
+                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index], folder, websites, 0)
 
-                            if ((width == 0) | (count != 1) | (int(final[index]) != 0)):
+                            if ((len(results) == 0) | (count != 1) | (int(final[index]) != 0)):
 
                                 while not complete:
 
@@ -287,7 +279,6 @@ class Downloader(object):
                                     prefix = "0" if (count < 10) else ""
                                     search_link = "?search_key=" + title[index] + "E" + prefix + str(count) + "&site="
                                     results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
-                                    width = len(results)
                                     files = os.listdir(folder)
                                     number = title[index][-3:] + "E" + prefix + str(count)
                                     count += 1
@@ -301,11 +292,11 @@ class Downloader(object):
 
                                     if (skip != True):
 
-                                        if (width > 0):
+                                        if (len(results) > 0):
 
                                             complete, skip = False, False
                                             pages = [result[1] for result in results]
-                                            for result in range(width): sites += [pages[result] for address in range(len(results[result][0]))]
+                                            for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
                                             for result in results: data += result[0]
                                             titles = [result["name"] for result in data]
                                             seeders = [result["seeds"] for result in data]
@@ -317,7 +308,7 @@ class Downloader(object):
                                             else: qbt.download_from_link(torrent, savepath = folder)
                                             data, sites = [], []
 
-                                        elif ((width == 0) & (count == 2)):
+                                        elif ((len(results) == 0) & (count == 2)):
 
                                             complete = True
                                             skip = False
@@ -340,7 +331,7 @@ class Downloader(object):
 
                                 done = True
                                 pages = [result[1] for result in results]
-                                for result in range(width): sites += [pages[result] for address in range(len(results[result][0]))]
+                                for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
                                 for result in results: data += result[0]
                                 titles = [result["name"] for result in data]
                                 seeders = [result["seeds"] for result in data]
@@ -348,7 +339,7 @@ class Downloader(object):
                                 sizes = [result["size"] for result in data]
                                 links = [result["link"] for result in data]
                                 torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
-                                if (torrent == "empty"): width, torrent, results = self.alternative(qbt, title[index], folder, websites, 0)
+                                if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], folder, websites, 0)
                                 if (torrent == "empty"): done, results = False, []
 
                     elif (field[index] == "series"):
@@ -364,18 +355,16 @@ class Downloader(object):
                             if (os.path.isdir(subfolder) == False): os.makedirs(subfolder)
                             complete, skip, count = False, False, 1
                             data, sites = [], []
-                            width = len(results)
-                            if (width == 0): width, torrent, results = self.alternative(qbt, title[index], subfolder, websites, 1)
+                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index], subfolder, websites, 1)
                             if (torrent != "empty"): counter += 1
 
-                            if (width == 0):
+                            if (len(results) == 0):
 
                                 while not complete:
 
                                     episode = "0" if (count < 10) else ""
                                     search_link = "?search_key=" + title[index] + " S" + season + str(counter) + "E" + episode + str(count) + "&site="
                                     results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
-                                    width = len(results)
                                     files = os.listdir(subfolder)
                                     number = "S" + season + str(counter) + "E" + episode + str(count)
 
@@ -388,10 +377,10 @@ class Downloader(object):
 
                                     if (skip == False):
 
-                                        if (width > 0):
+                                        if (len(results) > 0):
 
                                             pages = [result[1] for result in results]
-                                            for result in range(width): sites += [pages[result] for address in range(len(results[result][0]))]
+                                            for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
                                             for result in results: data += result[0]
                                             titles = [result["name"] for result in data]
                                             seeders = [result["seeds"] for result in data]
@@ -405,7 +394,7 @@ class Downloader(object):
                                             skip = False
                                             count += 1
 
-                                        elif ((width == 0) & (count == 1)):
+                                        elif ((len(results) == 0) & (count == 1)):
 
                                             complete = True 
                                             done = True
@@ -433,7 +422,7 @@ class Downloader(object):
                             else:
 
                                 pages = [result[1] for result in results]
-                                for result in range(width): sites += [pages[result] for address in range(len(results[result][0]))]
+                                for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
                                 for result in results: data += result[0]
                                 titles = [result["name"] for result in data]
                                 seeders = [result["seeds"] for result in data]
@@ -441,21 +430,20 @@ class Downloader(object):
                                 sizes = [result["size"] for result in data]
                                 links = [result["link"] for result in data]
                                 torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
-                                if (torrent == "empty"): width, torrent, results = self.alternative(qbt, title[index], subfolder, websites, 1)
+                                if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], subfolder, websites, 1)
                                 if (torrent == "empty"): done, results = False, []
                                 else: counter += 1
 
             else:
 
-                for index in range(length):
+                for index in range(len(title)):
 
                     data, sites, torrent = [], [], ""
                     folder = self.directory_manager(tag, title = title[index])
                     search_link = "?search_key=" + title[index] + "&site="
                     results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
-                    width = len(results)
                     pages = [result[1] for result in results]
-                    for result in range(width): sites += [pages[result] for address in range(len(results[result][0]))]
+                    for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
                     for result in results: data += result[0]
                     titles = [result["name"] for result in data]
                     seeders = [result["seeds"] for result in data]
@@ -473,9 +461,8 @@ class Downloader(object):
             title, link, chapter, tag = self.extractor()
             root = os.getcwd()
             os.chdir("wco_dl"), print()
-            length = len(title)
 
-            for index in range(length):
+            for index in range(len(title)):
 
                 tests, folders = [], []
                 for item in range(len(title[index])): tests.append(title[index][item] + " anime") if (len(title[index][item].split()) == 1) else tests.append(title[index][item])
@@ -485,6 +472,8 @@ class Downloader(object):
 
                     for item in range(len(link[index][element])):
 
+                        os.system("cls")
+                        print(f"\nCurrently downloading '{chapter[index][element][item]}' from {title[index][0]} [{item + 1} / {len(link[index][element])} ({index + 1} / {len(title)})] \n\n")
                         settings = Settings()
                         header, season, episode, description, url = self.information(link[index][element][item])
                         season = re.search(r"(\d+)", season).group(1).zfill(settings.get_setting("seasonPadding"))
@@ -516,20 +505,17 @@ class Downloader(object):
 
                                 if (os.path.isdir(subfolder) == True):
 
-                                    if ((file_name not in os.listdir(subfolder)) & (test not in os.listdir(subfolder))):
+                                    if ((file_name not in os.listdir(subfolder)) & (test not in os.listdir(subfolder)) & 
+                                        (file_name not in os.listdir(folder)) & (test not in os.listdir(folder))):
 
-                                        subprocess.Popen(f"python crawler.py -i {link[index][element][item]} -o {subfolder}", shell = True)
-                                        self.monitor_download(link[index][element][item], subfolder)
-                                        os.rename(subfolder + "\\" + file_name, subfolder + "\\" + test)
+                                        self.wco_download(link[index][element][item], folder, file_name, test)
                                         break
 
                         else:
 
                             if ((file_name not in os.listdir(folder)) & (test not in os.listdir(folder))):
 
-                                subprocess.Popen(f"python crawler.py -i {link[index][element][item]} -o {folder}", shell = True)
-                                self.monitor_download(link[index][element][item], folder)
-                                os.rename(folder + "\\" + file_name, folder + "\\" + test)
+                                self.wco_download(link[index][element][item], folder, file_name, test)
 
                     for reference, path, items in os.walk(folders[element]):
 
@@ -539,9 +525,17 @@ class Downloader(object):
                             self.replace_folder(reference + "\\" + directory, reference + "\\" + child)
 
                     parent = folders[element].replace("_", " ").replace(" anime", "")
+                    self.delete_copy(folders[element], parent)
                     self.replace_folder(folders[element], parent)
 
             os.chdir(root)
+
+
+    def wco_download(self, link, folder, title, tag):
+
+        subprocess.Popen(f"python crawler.py -i {link} -o {folder}", shell = True)
+        self.monitor_download(link, folder)
+        os.rename(folder + "\\" + title, folder + "\\" + tag)
 
 
     def alternative(self, server, title, folder, websites, indicator):
@@ -553,12 +547,11 @@ class Downloader(object):
         elif (indicator == 1): test = title.lower().rstrip().lstrip() + " season " + str(counter)
         search_link = "?search_key=" + test + " complete" + "&site="
         results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
-        width = len(results)
 
-        if (width > 0):
+        if (len(results) > 0):
 
             pages = [result[1] for result in results]
-            for result in range(width): sites += [pages[result] for address in range(len(results[result][0]))]
+            for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
             for result in results: data += result[0]
             titles = [result["name"] for result in data]
             seeders = [result["seeds"] for result in data]
@@ -567,14 +560,14 @@ class Downloader(object):
             links = [result["link"] for result in data]
             torrent = self.torrent_selector(test, links, titles, seeders, leechers, sizes, sites)
             if (torrent != "empty"): server.download_from_link(torrent, savepath = folder)
-            else: torrent, results, width = "empty", [], 0
+            else: torrent, results = "empty", []
 
         else:
 
             torrent = "empty"
             results = []
 
-        return width, torrent, results
+        return torrent, results
 
 
     def check_page(self, folder):
@@ -650,8 +643,14 @@ class Downloader(object):
 
         try:
 
-            if "season" in url: header, season, episode, description = re.findall(r"([a-zA-Z0-9].+)\s(season\s\d+\s?)(episode\s\d+\s)?(.+)", url.replace("-", " "))[0]
-            else: header, episode, description, season = re.findall(r"([a-zA-Z0-9].+)\s(episode\s\d+\s?)(.+)", url.replace("-", " "))[0], "season 1"
+            if "season" in url: 
+
+                header, season, episode, description = re.findall(r"([a-zA-Z0-9].+)\s(season\s\d+\s?)(episode\s\d+\s)?(.+)", url.replace("-", " "))[0]
+
+            else: 
+
+                header, episode, description = re.findall(r"([a-zA-Z0-9].+)\s(episode\s\d+\s?)(.+)", url.replace("-", " "))[0]
+                season = "season 1"
 
         except:
 
@@ -688,8 +687,7 @@ class Downloader(object):
                 for index in range(len(label)): print(f"{index + 1}. {label[index]} (duration: {length[index]}, channel: {channel[index]})")  if (len(length) > 0) else None
                 number = input(f"\nInvalid entry, please select a value from the list above (1 - {len(label)}): ")
 
-            number = int(number.rstrip().lstrip())
-            url = link[number - 1]
+            url = link[int(number.rstrip().lstrip()) - 1]
 
         else:
 
@@ -757,7 +755,7 @@ class Downloader(object):
                         if item not in os.listdir(folder): shutil.move(placeholder + "\\" + item, folder)
                         else: os.remove(placeholder + "\\" + item)
 
-                os.rmdir(placeholder)
+                if (len(os.listdir(placeholder)) == 0): os.rmdir(placeholder)
 
 
     def anime_search(self, title):
@@ -772,10 +770,9 @@ class Downloader(object):
         links = [item.get_attribute("href") for item in response]
         family = self.driver.find_elements_by_css_selector(".cerceve-tur-ve-genre")
         genres = [item.text for item in family]
-        size, Genres = len(links), genres.copy()
-        Titles, Links = titles.copy(), links.copy()
+        Genres, Titles, Links = genres.copy(), titles.copy(), links.copy()
 
-        for index in range(size):
+        for index in range(len(links)):
 
             if "subbed" in genres[index].lower():
 
@@ -858,23 +855,43 @@ class Downloader(object):
 
     def delete_copy(self, current_directory, directory):
 
-        reference = os.listdir(directory)
-        compare = os.listdir(current_directory)
-        holder = [element.split(".")[0] for element in reference]
+        if (self.category == "video"):
 
-        for item in compare:
+            reference = os.listdir(directory)
+            compare = os.listdir(current_directory)
+            holder = [element.split(".")[0] for element in reference]
 
-            file = item.split(".")[0]
-            data = os.path.join(current_directory, item)
-            if file in holder: os.remove(data)
+            for item in compare:
+
+                file = item.split(".")[0]
+                data = os.path.join(current_directory, item)
+                if file in holder: os.remove(data)
+
+        elif (self.category == "animation"):
+
+            if (os.path.isdir(directory) == True):
+
+                for reference, paths, items in os.walk(current_directory):
+
+                    for path in paths:
+                        
+                        duplicate = directory + "\\" + path
+
+                        if (os.path.isdir(duplicate) == True):
+
+                            for item in os.listdir(reference + "\\" + path):
+
+                                if item not in os.listdir(duplicate): shutil.move(reference + "\\" + path + "\\" + item, duplicate)
+                                else: os.remove(reference + "\\" + path + "\\" + item)
+
+                            os.rmdir(reference + "\\" + path)
 
 
     def link_selector(self, link, title, label, channel, anchor):
 
         position, best = 0, 0
-        size = len(link)
 
-        for index in range(size):
+        for index in range(len(link)):
             
             title_score = fw.ratio(title.lower().rstrip().lstrip(), label[index].lower().rstrip().lstrip())
             channel_score = fw.ratio(channel.lower().rstrip().lstrip(), anchor[index].lower().rstrip().lstrip()) if (channel != None) else 0
@@ -1009,22 +1026,20 @@ class Downloader(object):
 
                         sites = self.driver.find_elements_by_tag_name("td a")
                         comics = [comic.text for comic in sites]
-                        size = len(comics)
                         os.system("cls")
                         print("\nHere are the comic books available based on your search request: \n")
-                        for index in range(size): print(f"{index + 1}. {comics[index]}")
-                        if (size > 1): comic = input(f"\n\nWhich comic do you want to download? (1 - {size}): ")
+                        for index in range(len(comics)): print(f"{index + 1}. {comics[index]}")
+                        if (len(comics) > 1): comic = input(f"\n\nWhich comic do you want to download? (1 - {len(comics)}): ")
                         else: print(f"\n\n{comics[0]} will now be downloaded: \n\n")
 
-                        while comic.lower().rstrip().lstrip() not in self.numbers(1, size):
+                        while comic.lower().rstrip().lstrip() not in self.numbers(1, len(comics)):
 
                             os.system("cls"), print()
-                            for index in range(size): print(f"{index + 1}. {comics[index]}")
-                            comic = input(f"\n\nInvalid entry, please specify a value within the given range (1 - {size}): ")
+                            for index in range(len(comics)): print(f"{index + 1}. {comics[index]}")
+                            comic = input(f"\n\nInvalid entry, please specify a value within the given range (1 - {len(comics)}): ")
                             print()
 
-                        comic = int(comic)
-                        book = comics[comic - 1]
+                        book = comics[int(comic) - 1]
 
                     else:
 
@@ -1213,140 +1228,115 @@ class Downloader(object):
             start, stop = "1", "0"
             choose, done = "b", False
             count, add, titles = 1, "no", []
-            sites, site = [], []
-            begining, end = [], []
-            headers = []
+            headers, sites = [], []
             
             while not done:
 
                 os.system("cls")
-                title = input(f"\nPlease specify a title for the {self.ordinal(count)} show that you are searching for: ")
-                if (title == ""): title = self.test_query(title, 1)
-                text = title.lower().rstrip().lstrip()
-                labels, anchors = self.anime_search(title)
-                length, title, site, header = len(anchors), [], [], []
+                title, site, header = [], [], []
+                show = input(f"\nPlease specify a title for the {self.ordinal(count)} show that you are searching for: ")
+                if (show == ""): show = self.test_query(show, 1)
+                text = show.lower().rstrip().lstrip()
+                labels, anchors = self.anime_search(show)
                 os.system("cls")
 
-                if (length > 1):
+                if (len(anchors) > 0):
 
-                    print("\nHere are the available shows based on your search request: \n")
-                    for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
-                    select = input("\n\nDo you want to download all of the seasons?: \n\nA: yes \nB: no \n\n")
+                    if (len(anchors) > 1):
 
-                    while select.lower().rstrip().lstrip() not in self.options[0:4]:
+                        print("\nHere are the available shows based on your search request: \n")
+                        for counter in range(len(anchors)): print(f"{counter + 1}. {labels[counter]}")
+                        select = input("\n\nDo you want to download episodes from all of the seasons?: \n\nA: yes \nB: no \n\n")
 
-                        os.system("cls"), print()
-                        for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
-                        select = input("\nInvalid entry, please select an available option, are you downloading all the seasons?: \n\nA: yes \nB: no \n\n")
-
-                    if (select.lower().rstrip().lstrip() == "a"): select = True
-                    elif (select.lower().rstrip().lstrip() == "b"): select = False
-
-                    if (select == False):
-
-                        start = input("\nFrom what season are you starting to download your show?: ")
-
-                        while start.lower().rstrip().lstrip() not in self.numbers(1, length):
+                        while select.lower().rstrip().lstrip() not in self.options[0:4]:
 
                             os.system("cls"), print()
-                            for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
-                            start = input(f"\nInvalid entry, please specify a value within the given range (1 - {length}): ")
+                            for counter in range(len(anchors)): print(f"{counter + 1}. {labels[counter]}")
+                            select = input("\nInvalid entry, please select an available option, are you downloading episodes from all the seasons?: \n\nA: yes \nB: no \n\n")
 
-                        stop = input("\nUp until which season are you downloading your show? (if you only want to download one season, enter the same value as the starting season): ")
+                        if (select.lower().rstrip().lstrip() == "a"): select = True
+                        elif (select.lower().rstrip().lstrip() == "b"): select = False
 
-                        while stop.lower().rstrip().lstrip() not in self.numbers(int(start), length):
+                        if (select == False):
 
-                            os.system("cls"), print()
-                            for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
-                            stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {length}): ")
+                            start = input("\nFrom what season are you starting to download your show?: ")
 
-                        first = int(start) if start.isdigit() else 1
-                        last = int(stop) if stop.isdigit() else 0
-
-                        while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, length)) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), length))):
-
-                            os.system("cls")
-                            print(f"\nInvalid entry, the last season must be a value larger than the first season and within the given range (1 - {length}): \n")
-                            for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
-                            start = input(f"\nChoose which season to start downloading {text.title()} from (1 - {length}): ")
-
-                            while start.lower().rstrip().lstrip() not in self.numbers(1, length):
+                            while start.lower().rstrip().lstrip() not in self.numbers(1, len(anchors)):
 
                                 os.system("cls"), print()
-                                for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
-                                start = input(f"\nInvalid entry, please specify a value within the given range (1 - {length}): ")
+                                for counter in range(len(anchors)): print(f"{counter + 1}. {labels[counter]}")
+                                start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(anchors)}): ")
 
-                            stop = input(f"\nChoose the last season to download from the series ({start} - {length}): ")
+                            stop = input("\nUp until which season are you downloading your show? (if you only want to download one season, enter the same value as the starting season): ")
 
-                            while first.lower().rstrip().lstrip() not in self.numbers(int(start), length):
+                            while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(anchors)):
 
                                 os.system("cls"), print()
-                                for counter in range(length): print(f"{counter + 1}. {labels[counter]}")
-                                stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {length}): ")
+                                for counter in range(len(anchors)): print(f"{counter + 1}. {labels[counter]}")
+                                stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(anchors)}): ")
 
                             first = int(start) if start.isdigit() else 1
                             last = int(stop) if stop.isdigit() else 0
 
-                    else: start, stop = "1", str(length)
-                    start, stop = int(start), int(stop)
-                    if (stop == start): links, names = [anchors[start - 1]], [labels[start - 1]]
-                    elif ((start == 1) & (stop == 0)): links, names = anchors.copy(), labels.copy()
-                    elif (stop > start): links, names = anchors[start - 1:stop].copy(), labels[start - 1:stop].copy()
-
-                    for index in range(len(links)):
-
-                        os.system("cls")
-                        self.persist_search(links[index])
-                        sequence = self.driver.find_elements_by_css_selector("#catlist-listview li a")
-                        episodes = [episode.text for episode in sequence]
-                        episodes = list(reversed(episodes))
-                        anchor = [episode.get_attribute("href") for episode in sequence]
-                        anchor = list(reversed(anchor))
-                        label = names[index]
-                        for character in self.restrictions: label = label.replace(character, "-")
-                        print(f"\nThese are all the episodes in {names[index]}: \n")
-                        for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                        choose = input(f"\n\nDo you want to download all of the episodes?: \n\nA: yes \nB: no \n\n")
-
-                        while choose.lower().rstrip().lstrip() not in self.options[0:4]:
-
-                            os.system("cls"), print()
-                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                            choose = input(f"\nInvalid entry, please select an available option, are you downloading the entire season of {names[index]}: \n\nA: yes \nB: no \n\n")
-
-                        if (choose.lower().rstrip().lstrip() == "a"): choose = True
-                        elif (choose.lower().rstrip().lstrip() == "b"): choose = False
-
-                        if (choose == False):
-
-                            os.system("cls"), print()
-                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                            start = input(f"\n\nFrom what episode are you starting to download {names[index]}?: ")
-
-                            while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
-
-                                os.system("cls"), print()
-                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                                start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
-
-                            stop = input(f"\nUp until which episode are you downloading this season? (if you only want to download one episode, enter the same value as the starting episode): ")
-
-                            while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
-
-                                os.system("cls"), print()
-                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                                stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
-
-                            first = int(start) if start.isdigit() else 1
-                            last = int(stop) if stop.isdigit() else 0
-
-                            while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)))):
+                            while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, len(anchors))) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(anchors)))):
 
                                 os.system("cls")
-                                print(f"\nInvalid entry, the last episode must be a value larger than the first episode and within the given range (1 - {len(episodes)}): \n")
-                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                print(f"\nInvalid entry, the last season must be a value larger than the first season and within the given range (1 - {len(anchors)}): \n")
+                                for counter in range(len(anchors)): print(f"{counter + 1}. {labels[counter]}")
+                                start = input(f"\nChoose which season to start downloading {text.title()} from (1 - {len(anchors)}): ")
 
-                                start = input(f"\nChoose which episode to start downloading {names[index]} from (1 - {len(episodes)}): ")
+                                while start.lower().rstrip().lstrip() not in self.numbers(1, len(anchors)):
+
+                                    os.system("cls"), print()
+                                    for counter in range(len(anchors)): print(f"{counter + 1}. {labels[counter]}")
+                                    start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(anchors)}): ")
+
+                                stop = input(f"\nChoose the last season to download from the series ({start} - {len(anchors)}): ")
+
+                                while first.lower().rstrip().lstrip() not in self.numbers(int(start), len(anchors)):
+
+                                    os.system("cls"), print()
+                                    for counter in range(len(anchors)): print(f"{counter + 1}. {labels[counter]}")
+                                    stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(anchors)}): ")
+
+                                first = int(start) if start.isdigit() else 1
+                                last = int(stop) if stop.isdigit() else 0
+
+                        else: start, stop = "1", str(len(anchors))
+                        start, stop = int(start), int(stop)
+                        if (stop == start): links, names = [anchors[start - 1]], [labels[start - 1]]
+                        elif ((start == 1) & (stop == 0)): links, names = anchors.copy(), labels.copy()
+                        elif (stop > start): links, names = anchors[start - 1:stop].copy(), labels[start - 1:stop].copy()
+
+                        for index in range(len(links)):
+
+                            os.system("cls")
+                            self.persist_search(links[index])
+                            sequence = self.driver.find_elements_by_css_selector("#catlist-listview li a")
+                            episodes = [episode.text for episode in sequence]
+                            episodes = list(reversed(episodes))
+                            anchor = [episode.get_attribute("href") for episode in sequence]
+                            anchor = list(reversed(anchor))
+                            label = names[index]
+                            for character in self.restrictions: label = label.replace(character, "-")
+                            print(f"\nThese are all the episodes in {names[index]}: \n")
+                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                            choose = input(f"\n\nDo you want to download all of the episodes?: \n\nA: yes \nB: no \n\n")
+
+                            while choose.lower().rstrip().lstrip() not in self.options[0:4]:
+
+                                os.system("cls"), print()
+                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                choose = input(f"\nInvalid entry, please select an available option, are you downloading the entire season of {names[index]}: \n\nA: yes \nB: no \n\n")
+
+                            if (choose.lower().rstrip().lstrip() == "a"): choose = True
+                            elif (choose.lower().rstrip().lstrip() == "b"): choose = False
+
+                            if (choose == False):
+
+                                os.system("cls"), print()
+                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                start = input(f"\n\nFrom what episode are you starting to download {names[index]}?: ")
 
                                 while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
 
@@ -1354,7 +1344,7 @@ class Downloader(object):
                                     for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
                                     start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
 
-                                stop = input(f"\nChoose the last episode to download from this season ({start} - {len(episodes)}): ")
+                                stop = input(f"\nUp until which episode are you downloading this season? (if you only want to download one episode, enter the same value as the starting episode): ")
 
                                 while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
 
@@ -1365,113 +1355,151 @@ class Downloader(object):
                                 first = int(start) if start.isdigit() else 1
                                 last = int(stop) if stop.isdigit() else 0
 
+                                while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)))):
+
+                                    os.system("cls")
+                                    print(f"\nInvalid entry, the last episode must be a value larger than the first episode and within the given range (1 - {len(episodes)}): \n")
+                                    for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+
+                                    start = input(f"\nChoose which episode to start downloading {names[index]} from (1 - {len(episodes)}): ")
+
+                                    while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
+
+                                        os.system("cls"), print()
+                                        for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                        start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
+
+                                    stop = input(f"\nChoose the last episode to download from this season ({start} - {len(episodes)}): ")
+
+                                    while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
+
+                                        os.system("cls"), print()
+                                        for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                        stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
+
+                                    first = int(start) if start.isdigit() else 1
+                                    last = int(stop) if stop.isdigit() else 0
+
+                            else: start, stop = "1", "0"
+                            start, stop = int(start), int(stop)
+                            if (start == stop): link, episode = [anchor[start - 1]], [episodes[start - 1]]
+                            elif (start < stop): link, episode = anchor[start - 1:stop].copy(), episodes[start - 1:stop].copy()
+                            elif ((start == 1) & (stop == 0)): link, episode = anchor.copy(), episodes[start - 1:stop].copy()
+                            title.append(label), site.append(link), header.append(episode)
+
+                    elif (len(anchors) == 1):
+
+                        os.system("cls")
+                        print(f"\nThere is only one show available with the requested search, this title will now be downloaded: {labels[0]}")
+                        link, label = anchors[0], labels[0]
+                        for character in self.restrictions: label = label.replace(character, "-")
+                        self.persist_search(link)
+                        sequence = self.driver.find_elements_by_css_selector("#catlist-listview li a")
+                        episodes = [episode.text for episode in sequence]
+                        episodes = list(reversed(episodes))
+                        anchor = [episode.get_attribute("href") for episode in sequence]
+                        anchor = list(reversed(anchor))
+                        print(f"\nThese are all the episodes in {label}: \n")
+                        for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                        choose = input("\n\nDo you want to download all of the episodes?: \n\nA: yes \nB: no \n\n")
+
+                        while choose.lower().rstrip().lstrip() not in self.options[0:4]:
+
+                            os.system("cls"), print()
+                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                            choose = input("\n\nInvalid entry, please select an available option, are you downloading all the episodes?: \n\nA: yes \nB: no \n\n")
+
+                        if (choose.lower().rstrip().lstrip() == "a"): choose = True
+                        elif (choose.lower().rstrip().lstrip() == "b"): choose = False
+                        os.system("cls")
+
+                        if (choose == False):
+
+                            print()
+                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                            start = input(f"\nFrom what episode are you starting to download {label}?: ")
+
+                            while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
+
+                                os.system("cls")
+                                start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
+
+                            stop = input("\nUp until which episode are you downloading this season? (if you only want to download one episode, enter the same value as the starting episode): ")
+
+                            while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
+
+                                os.system("cls")
+                                stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
+
                         else: start, stop = "1", "0"
+                        first = int(start) if start.isdigit() else 1
+                        last = int(stop) if stop.isdigit() else 0
+
+                        while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)))):
+
+                            os.system("cls")
+                            print(f"\nInvalid entry, the last episode must be a value larger than the first episode and within the given range (1 - {len(episodes)}): \n")
+                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                            start = input(f"\nChoose which episode to start downloading {label} from (1 - {len(episodes)}): ")
+
+                            while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
+
+                                os.system("cls"), print()
+                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
+
+                            stop = input(f"\nChoose the last episode to download from this season ({start} - {len(episodes)}): ")
+
+                            while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
+
+                                os.system("cls"), print()
+                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
+
+                            first = int(start) if start.isdigit() else 1
+                            last = int(stop) if stop.isdigit() else 0
+
                         start, stop = int(start), int(stop)
                         if (start == stop): link, episode = [anchor[start - 1]], [episodes[start - 1]]
                         elif (start < stop): link, episode = anchor[start - 1:stop].copy(), episodes[start - 1:stop].copy()
                         elif ((start == 1) & (stop == 0)): link, episode = anchor.copy(), episodes[start - 1:stop].copy()
-                        title.append(label), site.append(link), header.append(episode)
+                        title, site, header = [label], [link], [episode]
 
-                elif (length == 1):
+                    for item in header:
 
+                        for counter in range(len(item)): 
+
+                            for character in self.restrictions: item[counter] = item[counter].replace(character, "-")
+
+                    start, stop = str(start), str(stop)
+                    titles.append(title), sites.append(site), headers.append(header)
                     os.system("cls")
-                    print(f"\nThere is only one show available with the requested search, this title will now be downloaded: {labels[0]}")
-                    link, label = anchors[0], labels[0]
-                    for character in self.restrictions: label = label.replace(character, "-")
-                    self.persist_search(link)
-                    sequence = self.driver.find_elements_by_css_selector("#catlist-listview li a")
-                    episodes = [episode.text for episode in sequence]
-                    episodes = list(reversed(episodes))
-                    anchor = [episode.get_attribute("href") for episode in sequence]
-                    anchor = list(reversed(anchor))
-                    print(f"\nThese are all the episodes in {label}: \n")
-                    for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                    choose = input("\n\nDo you want to download all of the episodes?: \n\nA: yes \nB: no \n\n")
+                    add = input("\nAre you adding more shows to the download schedule?: \n\nA: yes \nB: no \n\n")
 
-                    while choose.lower().rstrip().lstrip() not in self.options[0:4]:
-
-                        os.system("cls"), print()
-                        for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                        choose = input("\n\nInvalid entry, please select an available option, are you downloading all the episodes?: \n\nA: yes \nB: no \n\n")
-
-                    if (choose.lower().rstrip().lstrip() == "a"): choose = True
-                    elif (choose.lower().rstrip().lstrip() == "b"): choose = False
-                    os.system("cls")
-
-                    if (choose == False):
-
-                        print()
-                        for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                        start = input(f"\nFrom what episode are you starting to download {label}?: ")
-
-                        while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
-
-                            os.system("cls")
-                            start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
-
-                        stop = input("\nUp until which episode are you downloading this season? (if you only want to download one episode, enter the same value as the starting episode): ")
-
-                        while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
-
-                            os.system("cls")
-                            stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
-
-                    else: start, stop = "1", "0"
-                    first = int(start) if start.isdigit() else 1
-                    last = int(stop) if stop.isdigit() else 0
-
-                    while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)))):
+                    while add.lower().rstrip().lstrip() not in self.options[0:4]:
 
                         os.system("cls")
-                        print(f"\nInvalid entry, the last episode must be a value larger than the first episode and within the given range (1 - {len(episodes)}): \n")
-                        for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                        start = input(f"\nChoose which episode to start downloading {label} from (1 - {len(episodes)}): ")
+                        add = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
 
-                        while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
+                    if (add.lower().rstrip().lstrip() == "a"): add = "yes"
+                    elif (add.lower().rstrip().lstrip() == "b"): add = "no"
+                    if (add.lower().rstrip().lstrip() == "no"): done = True
+                    choose, count = "b", count + 1
+                    start, stop = "1", "0"
 
-                            os.system("cls"), print()
-                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                            start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
+                elif (len(anchors) == 0):
 
-                        stop = input(f"\nChoose the last episode to download from this season ({start} - {len(episodes)}): ")
+                    exit = input(f"\nThere are no results matching your requested search; '{show}', do you want to try a different title or exit the current download session? (all previously added shows will continue to be downloaded): \n\nA: input another title \nB: proceed to download specified shows \n\n")
 
-                        while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
+                    while exit.lower().rstrip().lstrip() not in self.options[0:4]:
 
-                            os.system("cls"), print()
-                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                            stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
+                        os.system("cls")
+                        exit = input(f"\nInvalid entry, please select an available option: \n\nA: input another title \nB: proceed to download specified shows \n\n")
 
-                        first = int(start) if start.isdigit() else 1
-                        last = int(stop) if stop.isdigit() else 0
+                    if (exit.lower().rstrip().lstrip() == "a"): done = False
+                    elif (exit.lower().rstrip().lstrip() == "b"): done = True
 
-                    start, stop = int(start), int(stop)
-                    if (start == stop): link, episode = [anchor[start - 1]], [episodes[start - 1]]
-                    elif (start < stop): link, episode = anchor[start - 1:stop].copy(), episodes[start - 1:stop].copy()
-                    elif ((start == 1) & (stop == 0)): link, episode = anchor.copy(), episodes[start - 1:stop].copy()
-                    title, site, header = [label], [link], [episode]
-
-                for item in header:
-
-                    for counter in range(len(item)): 
-
-                        for character in self.restrictions: item[counter] = item[counter].replace(character, "-")
-
-                start, stop = str(start), str(stop)
-                titles.append(title), sites.append(site), headers.append(header)
-                os.system("cls")
-                add = input("\nAre you adding more shows to the download schedule?: \n\nA: yes \nB: no \n\n")
-
-                while add.lower().rstrip().lstrip() not in self.options[0:4]:
-
-                    os.system("cls")
-                    add = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
-
-                if (add.lower().rstrip().lstrip() == "a"): add = "yes"
-                elif (add.lower().rstrip().lstrip() == "b"): add = "no"
-                if (add.lower().rstrip().lstrip() == "no"): done = True
-                choose, count = "b", count + 1
-                start, stop = "1", "0"
-
+            os.system("cls")
             return titles, sites, headers, tag
 
 
@@ -1483,10 +1511,10 @@ class Downloader(object):
         good_quality = ["720", "265"]
         seed, leech, byte, torrent, tag = [], [], [], [], []
         links, titles, seeders, leechers, sizes, sites, check = self.filter_torrents(links, titles, seeders, leechers, sizes, sites)
-        size, flag = len(links), False
         target = title.lower().rstrip().lstrip()
+        flag = False
 
-        for index in range(size):
+        for index in range(len(links)):
 
             flag = False
             if (links[index][-1] == "/"): append = "&site="
@@ -1525,8 +1553,7 @@ class Downloader(object):
     def test_similarity(self, compare, target):
 
         score, percent = 0, 0
-        size = len(target)
-        for index in range(size): score += 1 if (compare[index] == target[index]) else 0
+        for index in range(len(target)): score += 1 if (compare[index] == target[index]) else 0
         percent = 100*score / len(target)
         return percent
 
@@ -1587,13 +1614,13 @@ class Downloader(object):
         Links, Titles = links.copy(), titles.copy()
         Seeders, Leechers = seeders.copy(), leechers.copy()
         Sizes, Sites = sizes.copy(), sites.copy()
-        size, test, check, skip = len(titles), [], False, False
+        test, check, skip = [], False, False
         good_quality = ["720", "265"]
         other_quality = ["2160", "1080", "480", "264"]
         bad_quality = ["hdcam", "cam", "cam-rip", "ts", "hdts", "telesync", "pdvd", "predvdrip", "x264-ion10", "mp4-mobile", "dub", "hindi", "3d"]
         sizes, Sizes = self.convert_size(sizes), self.convert_size(Sizes)
 
-        for index in range(size):
+        for index in range(len(titles)):
 
             text = " ".join(titles[index].split("."))
             header = text.split()
@@ -1629,9 +1656,8 @@ class Downloader(object):
             links, titles = Links.copy(), Titles.copy()
             seeders, leechers = Seeders.copy(), Leechers.copy()
             sizes, sites = Sizes.copy(), Sites.copy()
-            size = len(Sizes)
 
-            for index in range(size):
+            for index in range(len(Sizes)):
 
                 for quality in other_quality:
 
@@ -1746,14 +1772,13 @@ class Downloader(object):
 
     def image_thread(self, images):
 
-        size = len(images)
-        pages = list(range(size))
+        pages = list(range(len(images)))
         bulk, section = 50, 0
 
-        if (size > bulk):
+        if (len(images) > bulk):
 
-            batch = int(size / bulk)
-            remainder = size - batch*bulk
+            batch = int(len(images) / bulk)
+            remainder = len(images) - batch*bulk
 
             for index in range(batch):
 
@@ -1768,13 +1793,12 @@ class Downloader(object):
 
         else:
 
-            with concurrent.futures.ThreadPoolExecutor(size) as executor: executor.map(self.download_images, images, pages)
+            with concurrent.futures.ThreadPoolExecutor(len(images)) as executor: executor.map(self.download_images, images, pages)
 
 
     def pdf_converter(self, title):
 
-        path = os.getcwd()
-        files = os.listdir(path)
+        files = os.listdir(os.getcwd())
         folder = sorted(files, key = lambda file: int(file.split(".")[0]) if file.endswith(".jpg") else -1)
         images = [file for file in folder if file.endswith(".jpg")]
         with open(f"{title}.pdf", "wb") as PDF: PDF.write(converter.convert(images))
@@ -1783,13 +1807,12 @@ class Downloader(object):
     def process_file(self, title):
 
         done = False
-        path = os.getcwd()
 
         while not done:
 
             try:
 
-                files = os.listdir(path)
+                files = os.listdir(os.getcwd())
                 if (f"{title}.pdf" in files): os.remove(f"{title}.pdf")
                 images = self.save_images()
                 self.image_thread(images)
@@ -1805,8 +1828,7 @@ class Downloader(object):
 
     def kill_chrome(self):
 
-        path = os.getcwd()
-        folder = os.listdir(path)
+        folder = os.listdir(os.getcwd())
         parent = psutil.Process(self.driver.service.process.pid)
         children = parent.children(recursive = True)
 
