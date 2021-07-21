@@ -33,7 +33,7 @@ class Downloader(object):
     
     options = ["A", "a", "B", "b", "C", "c", "D", "d", "E", "e"]
     standard = r"[^a-zA-Z0-9\s:]"
-    restrictions = ["?", "/", "\\", ":", "*", ">", "<", "|", "'", '"']
+    restrictions = ["?", "/", "\\", ":", "*", ">", "<", "|", '"']
     ordinal = lambda self, index: "%d%s" % (index, "tsnrhtdd"[(index//10%10!=1)*(index%10<4)*index%10::4])
     numbers = lambda self, start, end: [str(index) for index in range(start, end + 1)]
     video_duration = lambda self, filename: float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filename], stdout = subprocess.PIPE, stderr = subprocess.STDOUT).stdout)
