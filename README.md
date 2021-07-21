@@ -8,7 +8,7 @@ ________________________________________________________________________________
 
 Description:
 
-The program is a command line script that downloads audio, a single video or an entire playlist from YouTube, torrents (single or bulk), animated (single or bulk) shows and comic books (single or bulk) in PDF format based on the input search request, it also creates a directory under the user's "Documents" folder (Windows 10) in which to store the saved files - the name of the folder is specified by the user under the content category prompt.
+The program is a command line script that downloads audio, a single video or an entire playlist from YouTube, torrents (single or bulk), animated shows (single or bulk) and comic books (single or bulk) in PDF format based on the input search request, it also creates a directory under the user's "Documents" folder (Windows 10) in which to store the saved files - the name of the folder is specified by the user under the content category prompt.
 
 
 Requirements:
