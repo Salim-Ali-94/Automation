@@ -10,13 +10,10 @@ from Extractor import *
 from Process import ProcessParallel
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# TODO: Make it track missed episodes and retry when done
-
 class Lifter(object):
 
     def __init__(self, url, resolution, logger, season, ep_range, exclude, output, newest, settings, database, quiet, update=False, threads=None):
 
-        # Define our variables
         self.url = url
         self.resolution = resolution
         self.logger = logger
@@ -50,24 +47,16 @@ class Lifter(object):
         self.header = {'User-Agent': self.user_agent, 'Accept': '*/*', 'Referer': url, 'X-Requested-With': 'XMLHttpRequest'}
         self.base_url = "https://wcostream.com"
         self.path = os.path.dirname(os.path.realpath(__file__))
-        # Check if the URL is valid
         valid_link, extra = self.is_valid(self.url)
 
         if valid_link:
-            # Check to see if we are downloading a single episode or multiple
-            self.database.add_new_anime_to_database(self.url)
 
-            if (extra[0] == "anime/"):
-                # We are downloading multiple episodes
-                # print("Downloading show")
-                self.download_show(url)
-            else:
-                # We are downloading a single episode
-                # print('Downloading single')
-                self.download_single(url, extra)
+            self.database.add_new_anime_to_database(self.url)
+            if (extra[0] == "anime/"): self.download_show(url)
+            else: self.download_single(url, extra)
+                
         else:
-            # Not a valid wcostream link
-            # print(extra)
+            
             sys.exit()
 
     def check_output(self, anime_name):
@@ -155,9 +144,6 @@ class Lifter(object):
         show_info = self.info_extractor(extra)
         output = self.check_output(show_info[0])
         Extractor(logger=self.logger, download_url=download_url, backup_url=source_url, hidden_url=hidden_url,output=output, header=self.header, user_agent=self.user_agent, show_info=show_info, settings=self.settings, quiet=self.quiet)
-        # extractor = Extractor(logger=self.logger, download_url=download_url, backup_url=source_url, hidden_url=hidden_url,output=output, header=self.header, user_agent=self.user_agent, show_info=show_info, settings=self.settings, quiet=self.quiet)
-        # file_name = extractor.file_name
-        # return file_name
 
     def test(self, i, ii):
 
@@ -197,7 +183,7 @@ class Lifter(object):
             ep_range = 'All'
             season = 'season-All'
 
-        if self.newest:  # True or False
+        if self.newest:
 
             links = links[0:1]
             ep_range = 'All'
@@ -269,9 +255,6 @@ class Lifter(object):
                     output = self.check_output(show_info[0])
 
                     Extractor(logger=self.logger, download_url=download_url, backup_url=backup_url, hidden_url=hidden_url ,output=output, header=self.header, user_agent=self.user_agent, show_info=show_info, settings=self.settings, quiet=self.quiet)
-                    # extractor = Extractor(logger=self.logger, download_url=download_url, backup_url=source_url, hidden_url=hidden_url,output=output, header=self.header, user_agent=self.user_agent, show_info=show_info, settings=self.settings, quiet=self.quiet)
-                    # file_name = extractor.file_name
-                    # return file_name
 
             else:
 
@@ -286,10 +269,8 @@ class Lifter(object):
                     
                     if (int(self.threads) > len(matching)):
 
-                        # print('Too many threads, setting threads to deafult amount.')
                         self.threads = 3
                     
-                    # procs = ProcessParallel(print('Threads started', end='\n\n'))
                     procs = ProcessParallel(print('', end='\n\n'))
 
                     for x in range(int(self.threads)):
@@ -354,15 +335,10 @@ class Lifter(object):
                 output = self.check_output(show_info[0])
 
                 Extractor(logger=self.logger, download_url=download_url, backup_url=backup_url, hidden_url=hidden_url, output=output, header=self.header, user_agent=self.user_agent, show_info=show_info, settings=self.settings, quiet=self.quiet)
-                # extractor = Extractor(logger=self.logger, download_url=download_url, backup_url=source_url, hidden_url=hidden_url,output=output, header=self.header, user_agent=self.user_agent, show_info=show_info, settings=self.settings, quiet=self.quiet)
-                # file_name = extractor.file_name
 
             if (self.original_thread != None and self.original_thread != 0): 
                 
                 self.threads = self.original_thread
-
-            # return file_name
-
 
 
     @staticmethod
@@ -409,9 +385,8 @@ class Lifter(object):
         page = self.request_c(embed_url)
         html = page.text
 
-        # Find the stream URLs.
         if 'getvid?evid' in html:
-            # Query-style stream getting.
+            
             source_url = re.search(r'get\("(.*?)"', html, re.DOTALL).group(1)
 
             page2 = self.request_c(self.base_url + source_url, extraHeaders={'User-Agent': self.user_agent, 'Accept': '*/*', 'Referer': embed_url, 'X-Requested-With': 'XMLHttpRequest'})
@@ -421,24 +396,20 @@ class Lifter(object):
                 raise Exception('Sources XMLHttpRequest request failed')
 
             json_data = page2.json()
-            # Only two qualities are ever available: 480p ("SD") and 720p ("HD").
             source_urls = []
             sd_token = json_data.get('enc', '')
             hd_token = json_data.get('hd', '')
             source_base_url = json_data.get('server', '') + '/getvid?evid='
             if (hd_token != ""): source_urls.append(('720 (HD)', source_base_url + hd_token))
             else: source_urls.append(('480 (SD)', source_base_url + sd_token))  # Order the items as (LABEL, URL).
-            # Use the same backup stream method as the source: cdn domain + SD stream.
             backup_url = json_data.get('cdn', '') + '/getvid?evid=' + (sd_token or hd_token)
 
         else:
-            # Alternative video player page, with plain stream links in the JWPlayer javascript.
+            
             sources_block = re.search(r'sources:\s*?\[(.*?)\]', html, re.DOTALL).group(1)
             stream_pattern = re.compile(r'\{\s*?file:\s*?"(.*?)"(?:,\s*?label:\s*?"(.*?)")?')
-            source_urls = [# Order the items as (LABEL (or empty string), URL).
-                           (sourceMatch.group(2), sourceMatch.group(1))
+            source_urls = [(sourceMatch.group(2), sourceMatch.group(1))
                            for sourceMatch in stream_pattern.finditer(sources_block)]
-            # Use the backup link in the 'onError' handler of the 'jw' player.
             backup_match = stream_pattern.search(html[html.find(b'jw.onError'):])
             backup_url = backup_match.group(1) if backup_match else ''
 
