@@ -15,8 +15,6 @@ class Extractor(object):
         self.sess = create_scraper(self.sess)
         self.show_name = show_info[0]
         self.season = re.search(r'(\d+)', show_info[1]).group(1).zfill(settings.get_setting('seasonPadding'))
-        # if (show_info[2] == ""): self.episode = '{0}'.format(re.search(r'(\d+)', show_info[3]).group(1).zfill(settings.get_setting('episodePadding')))
-        # else: self.episode = '{0}'.format(re.search(r'(\d+)', show_info[2]).group(1).zfill(settings.get_setting('episodePadding')))
         try:
             if (show_info[2] == ""): self.episode = '{0}'.format(re.search(r'(\d+)', show_info[3]).group(1).zfill(settings.get_setting('episodePadding')))
             else: self.episode = '{0}'.format(re.search(r'(\d+)', show_info[2]).group(1).zfill(settings.get_setting('episodePadding')))
@@ -36,7 +34,6 @@ class Extractor(object):
 
         if (os.path.exists(self.file_path) and settings.get_setting('checkIfFileIsAlreadyDownloaded') and self.check_if_downloaded(download_url)):
 
-            # print('[wco-dl] - {0} skipped, already downloaded.'.format(self.file_name))
             pass
 
         elif (settings.get_setting('allowToResumeDownloads') and os.path.exists(self.file_path) and os.path.getsize(self.file_path) != 0): 
@@ -49,24 +46,18 @@ class Extractor(object):
 
                 if (os.path.getsize(self.file_path) == already_downloaded_bytes):
 
-                    # print('[wco-dl] - Trying to download using the backup URL...')
                     self.start_download(backup_url, already_downloaded_bytes)
 
                 return 
 
         else:
 
-            # print('[wco-dl] - Downloading {0}'.format(self.file_name))
-
             while True:
 
                 if not self.start_download(download_url):
 
-                    # print('[wco-dl] - Trying to download using the backup URL...')
-
                     if not self.start_download(self.backup_url):
 
-                        # print(f'[wco-dl] - Download for {self.file_name} did not complete, ' f'please create an issue on GitHub.\n')
                         f_path = os.path.dirname(os.path.realpath(__file__)) + os.sep
 
                         with open(f_path + "failed.txt", "a+") as failed: 
@@ -84,11 +75,6 @@ class Extractor(object):
                     break
 
     def check_if_downloaded(self, url):
-
-        # print('[wco-dl] - Checking if video is already downloaded, this may take some time, you can turn this off in your settings.')
-        # if (os.path.exists(self.file_path) and int(os.path.getsize(self.file_path)) == int(self.sess.get(url, headers=self.header).headers["content-length"])):
-
-        #     return True
 
         try:
 
@@ -111,8 +97,6 @@ class Extractor(object):
         while True:
 
             if (resume_bytes != None and os.path.exists(self.file_path) and os.path.getsize(self.file_path) != 0):
-
-                # print('Resuming download you can turn this off in your settings.')
 
                 host_url = self.sess.get(url).url
                 resume_header = {'Host': host_url.split("//")[-1].split("/")[0].split('?')[0],
@@ -155,7 +139,7 @@ class Extractor(object):
 
             else:
 
-                dlr = self.sess.get(url, stream=True, headers=self.header)  # Downloading the content using python.
+                dlr = self.sess.get(url, stream=True, headers=self.header)
 
                 try: 
 
@@ -186,14 +170,8 @@ class Extractor(object):
 
             if os.path.getsize(self.file_path) == 0:
 
-                # print("[wco-dl] - Download for {0} did not complete, please try again.\n".format(self.file_name))
-                # Upon failure of download append the episode name, file_name, to a text file in the same directory
-                # After finishing download all the shows the program will see if that text file exists and attempt
-                # to re-download the missing files
                 return False
 
             else:
-
-                # print('[wco-dl] - Download for {0} completed.\n'.format(self.file_name))
 
                 return True
