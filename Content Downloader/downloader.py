@@ -470,6 +470,8 @@ class Downloader(object):
 
                 for element in range(len(link[index])):
 
+                    self.file_manager(folders[element], 0)
+
                     for item in range(len(link[index][element])):
 
                         os.system("cls")
@@ -517,18 +519,50 @@ class Downloader(object):
 
                                 self.wco_download(link[index][element][item], folder, file_name, test)
 
-                    for reference, path, items in os.walk(folders[element]):
-
-                        for directory in path:
-                            
-                            child = directory.replace("_", " ").replace(" anime", "")
-                            self.replace_folder(reference + "\\" + directory, reference + "\\" + child)
-
+                    self.file_manager(folders[element], 1)
                     parent = folders[element].replace("_", " ").replace(" anime", "")
                     self.delete_copy(folders[element], parent)
                     self.replace_folder(folders[element], parent)
 
             os.chdir(root)
+
+
+    def file_manager(self, folder, indicator):
+
+        extensions = (".mp4", ".mkv", ".wav", ".avi", ".flv", ".mov", ".wmv", ".webm")
+
+        for reference, path, items in os.walk(folder):
+
+            if (indicator == 0):
+    
+                for item in items:
+
+                    if item.endswith(extensions):
+
+                        duration = self.video_duration(reference + "\\" + item)
+                        bits = os.path.getsize(reference + "\\" + item)
+                        megabytes, minutes = bits / 1e6, duration / 60
+                        ratio = megabytes / minutes
+                        if (ratio < 3): os.remove(reference + "\\" + item)
+
+                for directory in path:
+                    
+                    for file in os.listdir(reference + "\\" + directory):
+
+                        if file.endswith(extensions):
+
+                            duration = self.video_duration(reference + "\\" + directory + "\\" + file)
+                            bits = os.path.getsize(reference + "\\" + directory + "\\" + file)
+                            megabytes, minutes = bits / 1e6, duration / 60
+                            ratio = megabytes / minutes
+                            if (ratio < 3): os.remove(reference + "\\" + directory + "\\" + file)
+
+            elif (indicator == 1):
+
+                for directory in path:
+                    
+                    child = directory.replace("_", " ").replace(" anime", "")
+                    self.replace_folder(reference + "\\" + directory, reference + "\\" + child)
 
 
     def wco_download(self, link, folder, title, tag):
@@ -572,7 +606,7 @@ class Downloader(object):
 
     def check_page(self, folder):
 
-        header = folder.split("\\")[-1].replace("_", " ").replace("-", " ").replace("anime", "").rstrip().lstrip()
+        header = folder.split("\\")[-1].replace("_", " ").replace("-", " ").replace("anime", "").replace("!", "").rstrip().lstrip()
         labels, links = self.anime_search(header)
         response = self.persist_search(links[0])
         anchors = self.driver.find_elements_by_css_selector("#catlist-listview li a")
@@ -1238,6 +1272,7 @@ class Downloader(object):
                 if (show == ""): show = self.test_query(show, 1)
                 text = show.lower().rstrip().lstrip()
                 labels, anchors = self.anime_search(show)
+                proceed = True
                 os.system("cls")
 
                 if (len(anchors) > 0):
@@ -1390,102 +1425,117 @@ class Downloader(object):
                     elif (len(anchors) == 1):
 
                         os.system("cls")
-                        print(f"\nThere is only one show available with the requested search, this title will now be downloaded: {labels[0]}")
-                        link, label = anchors[0], labels[0]
-                        for character in self.restrictions: label = label.replace(character, "-")
-                        self.persist_search(link)
-                        sequence = self.driver.find_elements_by_css_selector("#catlist-listview li a")
-                        episodes = [episode.text for episode in sequence]
-                        episodes = list(reversed(episodes))
-                        anchor = [episode.get_attribute("href") for episode in sequence]
-                        anchor = list(reversed(anchor))
-                        print(f"\nThese are all the episodes in {label}: \n")
-                        for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                        choose = input("\n\nDo you want to download all of the episodes?: \n\nA: yes \nB: no \n\n")
+                        print(f"\nThere is only one title available with the requested search: {labels[0]}")
+                        proceed = input("\n\nDo you want to download episodes from this show?: \n\nA: yes \nB: no \n\n")
 
-                        while choose.lower().rstrip().lstrip() not in self.options[0:4]:
-
-                            os.system("cls"), print()
-                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                            choose = input("\n\nInvalid entry, please select an available option, are you downloading all the episodes?: \n\nA: yes \nB: no \n\n")
-
-                        if (choose.lower().rstrip().lstrip() == "a"): choose = True
-                        elif (choose.lower().rstrip().lstrip() == "b"): choose = False
-                        os.system("cls")
-
-                        if (choose == False):
-
-                            print()
-                            for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                            start = input(f"\nFrom what episode are you starting to download {label}?: ")
-
-                            while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
-
-                                os.system("cls")
-                                start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
-
-                            stop = input("\nUp until which episode are you downloading this season? (if you only want to download one episode, enter the same value as the starting episode): ")
-
-                            while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
-
-                                os.system("cls")
-                                stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
-
-                        else: start, stop = "1", "0"
-                        first = int(start) if start.isdigit() else 1
-                        last = int(stop) if stop.isdigit() else 0
-
-                        while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)))):
+                        while proceed.lower().rstrip().lstrip() not in self.options[0:4]:
 
                             os.system("cls")
-                            print(f"\nInvalid entry, the last episode must be a value larger than the first episode and within the given range (1 - {len(episodes)}): \n")
+                            proceed = input(f"\nInvalid entry, please select an available option: \n\nA: download episodes from {labels[0]} \nB: search for another show \n\n")
+
+                        if (proceed.lower().rstrip().lstrip() == "a"): proceed = True
+                        elif (proceed.lower().rstrip().lstrip() == "b"): proceed = False
+
+                        if (proceed == True):
+
+                            os.system("cls")
+                            link, label = anchors[0], labels[0]
+                            for character in self.restrictions: label = label.replace(character, "-")
+                            self.persist_search(link)
+                            sequence = self.driver.find_elements_by_css_selector("#catlist-listview li a")
+                            episodes = [episode.text for episode in sequence]
+                            episodes = list(reversed(episodes))
+                            anchor = [episode.get_attribute("href") for episode in sequence]
+                            anchor = list(reversed(anchor))
+                            print(f"\nThese are all the episodes in {label}: \n")
                             for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                            start = input(f"\nChoose which episode to start downloading {label} from (1 - {len(episodes)}): ")
+                            choose = input("\n\nDo you want to download all of the episodes?: \n\nA: yes \nB: no \n\n")
 
-                            while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
-
-                                os.system("cls"), print()
-                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                                start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
-
-                            stop = input(f"\nChoose the last episode to download from this season ({start} - {len(episodes)}): ")
-
-                            while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
+                            while choose.lower().rstrip().lstrip() not in self.options[0:4]:
 
                                 os.system("cls"), print()
                                 for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
-                                stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
+                                choose = input("\n\nInvalid entry, please select an available option, are you downloading all the episodes?: \n\nA: yes \nB: no \n\n")
 
+                            if (choose.lower().rstrip().lstrip() == "a"): choose = True
+                            elif (choose.lower().rstrip().lstrip() == "b"): choose = False
+                            os.system("cls")
+
+                            if (choose == False):
+
+                                print()
+                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                start = input(f"\nFrom what episode are you starting to download {label}?: ")
+
+                                while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
+
+                                    os.system("cls")
+                                    start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
+
+                                stop = input("\nUp until which episode are you downloading this season? (if you only want to download one episode, enter the same value as the starting episode): ")
+
+                                while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
+
+                                    os.system("cls")
+                                    stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
+
+                            else: start, stop = "1", "0"
                             first = int(start) if start.isdigit() else 1
                             last = int(stop) if stop.isdigit() else 0
 
-                        start, stop = int(start), int(stop)
-                        if (start == stop): link, episode = [anchor[start - 1]], [episodes[start - 1]]
-                        elif (start < stop): link, episode = anchor[start - 1:stop].copy(), episodes[start - 1:stop].copy()
-                        elif ((start == 1) & (stop == 0)): link, episode = anchor.copy(), episodes[start - 1:stop].copy()
-                        title, site, header = [label], [link], [episode]
+                            while ((last < first) | (start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes))) | (stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)))):
 
-                    for item in header:
+                                os.system("cls")
+                                print(f"\nInvalid entry, the last episode must be a value larger than the first episode and within the given range (1 - {len(episodes)}): \n")
+                                for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                start = input(f"\nChoose which episode to start downloading {label} from (1 - {len(episodes)}): ")
 
-                        for counter in range(len(item)): 
+                                while start.lower().rstrip().lstrip() not in self.numbers(1, len(episodes)):
 
-                            for character in self.restrictions: item[counter] = item[counter].replace(character, "-")
+                                    os.system("cls"), print()
+                                    for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                    start = input(f"\nInvalid entry, please specify a value within the given range (1 - {len(episodes)}): ")
 
-                    start, stop = str(start), str(stop)
-                    titles.append(title), sites.append(site), headers.append(header)
-                    os.system("cls")
-                    add = input("\nAre you adding more shows to the download schedule?: \n\nA: yes \nB: no \n\n")
+                                stop = input(f"\nChoose the last episode to download from this season ({start} - {len(episodes)}): ")
 
-                    while add.lower().rstrip().lstrip() not in self.options[0:4]:
+                                while stop.lower().rstrip().lstrip() not in self.numbers(int(start), len(episodes)):
 
+                                    os.system("cls"), print()
+                                    for counter in range(len(episodes)): print(f"{counter + 1}. {episodes[counter]}")
+                                    stop = input(f"\nInvalid entry, please specify a value within the given range ({start} - {len(episodes)}): ")
+
+                                first = int(start) if start.isdigit() else 1
+                                last = int(stop) if stop.isdigit() else 0
+
+                            start, stop = int(start), int(stop)
+                            if (start == stop): link, episode = [anchor[start - 1]], [episodes[start - 1]]
+                            elif (start < stop): link, episode = anchor[start - 1:stop].copy(), episodes[start - 1:stop].copy()
+                            elif ((start == 1) & (stop == 0)): link, episode = anchor.copy(), episodes[start - 1:stop].copy()
+                            title, site, header = [label], [link], [episode]
+
+                    if (proceed == True):
+
+                        for item in header:
+
+                            for counter in range(len(item)):
+
+                                for character in self.restrictions: item[counter] = item[counter].replace(character, "-")
+
+                        start, stop = str(start), str(stop)
+                        titles.append(title), sites.append(site), headers.append(header)
                         os.system("cls")
-                        add = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
+                        add = input("\nAre you adding more shows to the download schedule?: \n\nA: yes \nB: no \n\n")
 
-                    if (add.lower().rstrip().lstrip() == "a"): add = "yes"
-                    elif (add.lower().rstrip().lstrip() == "b"): add = "no"
-                    if (add.lower().rstrip().lstrip() == "no"): done = True
-                    choose, count = "b", count + 1
-                    start, stop = "1", "0"
+                        while add.lower().rstrip().lstrip() not in self.options[0:4]:
+
+                            os.system("cls")
+                            add = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
+
+                        if (add.lower().rstrip().lstrip() == "a"): add = "yes"
+                        elif (add.lower().rstrip().lstrip() == "b"): add = "no"
+                        if (add.lower().rstrip().lstrip() == "no"): done = True
+                        choose, count = "b", count + 1
+                        start, stop = "1", "0"
 
                 elif (len(anchors) == 0):
 
@@ -1846,9 +1896,9 @@ class Downloader(object):
             file.write(f"{self.driver.service.process.pid}")
             for child in children: file.write(f"\n{child.pid}")
 
+                
 
-
-
+                
 if __name__ == "__main__":
     
     # download qbit-torrent, configure server UI manager and setup a username & password
