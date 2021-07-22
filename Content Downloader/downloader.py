@@ -32,6 +32,7 @@ from wco_dl.Settings import Settings
 class Downloader(object):
     
     options = ["A", "a", "B", "b", "C", "c", "D", "d", "E", "e"]
+    extensions = (".mp4", ".mkv", ".wav", ".avi", ".flv", ".mov", ".wmv", ".webm")
     standard = r"[^a-zA-Z0-9\s:]"
     restrictions = ["?", "/", "\\", ":", "*", ">", "<", "|", '"']
     ordinal = lambda self, index: "%d%s" % (index, "tsnrhtdd"[(index//10%10!=1)*(index%10<4)*index%10::4])
@@ -184,7 +185,7 @@ class Downloader(object):
 
         elif (self.category == "comic book"):
 
-            extensions = (".txt", ".jpg")
+            formats = (".txt", ".jpg")
             issues, paths, headers, fields = self.extractor()
             folder = os.listdir(os.getcwd())
 
@@ -195,7 +196,7 @@ class Downloader(object):
                 links = issues[index]
                 folder = os.listdir(path)
                 os.chdir(path), os.system("cls")
-                for file in folder: os.remove(file) if file.endswith(extensions) else None
+                for file in folder: os.remove(file) if file.endswith(formats) else None
 
                 if (fields[index] == "single"):
 
@@ -204,7 +205,7 @@ class Downloader(object):
                     for character in self.restrictions: titles = titles.replace(character, "-")
                     self.process_file(titles)
                     folder = os.listdir(path)
-                    for file in folder: os.remove(file) if file.endswith(extensions) else None
+                    for file in folder: os.remove(file) if file.endswith(formats) else None
 
                 else:
 
@@ -220,7 +221,7 @@ class Downloader(object):
                             for character in self.restrictions: header = header.replace(character, "-")
                             self.process_file(header)
                             folder = os.listdir(path)
-                            for file in folder: os.remove(file) if file.endswith(extensions) else None 
+                            for file in folder: os.remove(file) if file.endswith(formats) else None 
 
         elif (self.category == "torrent"):
 
@@ -529,33 +530,25 @@ class Downloader(object):
 
     def file_manager(self, folder, indicator):
 
-        extensions = (".mp4", ".mkv", ".wav", ".avi", ".flv", ".mov", ".wmv", ".webm")
-
         for reference, path, items in os.walk(folder):
 
             if (indicator == 0):
     
                 for item in items:
 
-                    if item.endswith(extensions):
+                    if item.endswith(self.extensions): 
 
-                        duration = self.video_duration(reference + "\\" + item)
-                        bits = os.path.getsize(reference + "\\" + item)
-                        megabytes, minutes = bits / 1e6, duration / 60
-                        ratio = megabytes / minutes
-                        if (ratio < 3): os.remove(reference + "\\" + item)
+                        file = reference + "\\" + item
+                        self.inspect_file(file)
 
                 for directory in path:
                     
-                    for file in os.listdir(reference + "\\" + directory):
+                    for item in os.listdir(reference + "\\" + directory):
 
-                        if file.endswith(extensions):
+                        if item.endswith(self.extensions): 
 
-                            duration = self.video_duration(reference + "\\" + directory + "\\" + file)
-                            bits = os.path.getsize(reference + "\\" + directory + "\\" + file)
-                            megabytes, minutes = bits / 1e6, duration / 60
-                            ratio = megabytes / minutes
-                            if (ratio < 3): os.remove(reference + "\\" + directory + "\\" + file)
+                            file = reference + "\\" + directory + "\\" + item
+                            self.inspect_file(file)
 
             elif (indicator == 1):
 
@@ -563,6 +556,15 @@ class Downloader(object):
                     
                     child = directory.replace("_", " ").replace(" anime", "")
                     self.replace_folder(reference + "\\" + directory, reference + "\\" + child)
+
+
+    def inspect_file(self, file):
+
+        duration = self.video_duration(file)
+        bits = os.path.getsize(file)
+        megabytes, minutes = bits / 1e6, duration / 60
+        ratio = megabytes / minutes
+        if (ratio < 2.4): os.remove(file)
 
 
     def wco_download(self, link, folder, title, tag):
@@ -735,7 +737,7 @@ class Downloader(object):
         before = os.listdir(folder)
         busy, kb, previous = True, 0, ""
         new, KB, after = previous, kb, before.copy()
-        ratio = 4
+        ratio = 3
         time.sleep(10)
         if (len(os.listdir(folder)) != 0): new = os.listdir(folder)[-1]
 
@@ -743,7 +745,6 @@ class Downloader(object):
 
             time.sleep(20)
             after = os.listdir(folder)
-
             for item in after: new = item if item not in before else new
 
             if (len(after) == 0):
@@ -761,7 +762,7 @@ class Downloader(object):
                     bits = os.path.getsize(folder + "\\" + new)
                     megabytes, minutes = bits / 1e6, duration / 60
                     ratio = megabytes / minutes
-                    if (ratio < 3): subprocess.Popen(f"python crawler.py -i {site} -o {folder}", shell = True)
+                    if (ratio < 2.4): subprocess.Popen(f"python crawler.py -i {site} -o {folder}", shell = True)
                     else: busy = False
 
             kb = KB
@@ -770,8 +771,6 @@ class Downloader(object):
 
 
     def replace_folder(self, placeholder, folder):
-
-        extensions = (".mp4", ".mkv", ".wav", ".avi", ".flv", ".mov", ".wmv", ".webm")
 
         if ((os.path.isdir(folder) == False) & (os.path.isdir(placeholder) == True)):
 
@@ -784,7 +783,7 @@ class Downloader(object):
 
                 for item in os.listdir(placeholder):
 
-                    if item.endswith(extensions):
+                    if item.endswith(self.extensions):
 
                         if item not in os.listdir(folder): shutil.move(placeholder + "\\" + item, folder)
                         else: os.remove(placeholder + "\\" + item)
