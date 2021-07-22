@@ -552,6 +552,13 @@ class Downloader(object):
 
             elif (indicator == 1):
 
+                for item in items:
+
+                    if item.endswith(self.extensions): 
+
+                        file = reference + "\\" + item
+                        self.inspect_file(file)
+
                 for directory in path:
                     
                     child = directory.replace("_", " ").replace(" anime", "")
@@ -626,12 +633,12 @@ class Downloader(object):
             variable = None
             text = title.lower().split()
             if "season" in title.lower(): address = text.index("season")
-            elif "book" in title.lower(): address = text.index("book")
-            elif "chapter" in title.lower(): address = text.index("chapter")
             elif "volume" in title.lower(): address = text.index("volume")
+            elif "chapter" in title.lower(): address = text.index("chapter")
+            elif "book" in title.lower(): address = text.index("book")
             else: address = None
 
-            if (address != None):
+            if ((address != None) & ((address != len(text) - 1))):
 
                 value = text[address + 1]
                 if "-" in value: value = value.split("-")[0]
