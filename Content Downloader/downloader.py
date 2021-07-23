@@ -743,37 +743,37 @@ class Downloader(object):
 
         before = os.listdir(folder)
         busy, kb, previous = True, 0, ""
-        new, KB, after = previous, kb, before.copy()
+        current, KB, after = previous, kb, before.copy()
         ratio = 3
         time.sleep(10)
-        if (len(os.listdir(folder)) != 0): new = os.listdir(folder)[-1]
+        if (len(os.listdir(folder)) != 0): current = os.listdir(folder)[-1]
 
         while busy:
 
             time.sleep(20)
             after = os.listdir(folder)
-            for item in after: new = item if item not in before else new
+            for item in after: current = item if item not in before else current
 
             if (len(after) == 0):
 
                 busy = False
                 break
 
-            elif (new != ""):
+            elif (current != ""):
 
-                KB = os.path.getsize(folder + "\\" + new)
+                KB = os.path.getsize(folder + "\\" + current)
 
-                if ((KB == kb) & (new == previous)):
+                if ((KB == kb) & (current == previous)):
 
-                    duration = self.video_duration(folder + "\\" + new)
-                    bits = os.path.getsize(folder + "\\" + new)
+                    duration = self.video_duration(folder + "\\" + current)
+                    bits = os.path.getsize(folder + "\\" + current)
                     megabytes, minutes = bits / 1e6, duration / 60
                     ratio = megabytes / minutes
                     if (ratio < 2.4): subprocess.Popen(f"python crawler.py -i {site} -o {folder}", shell = True)
                     else: busy = False
 
             kb = KB
-            previous = new
+            previous = current
             before = after.copy()
 
 
@@ -915,16 +915,18 @@ class Downloader(object):
 
                     for path in paths:
                         
-                        duplicate = directory + "\\" + path
+                        folder = directory + "\\" + path
 
-                        if (os.path.isdir(duplicate) == True):
+                        if (os.path.isdir(folder) == True):
 
-                            for item in os.listdir(reference + "\\" + path):
+                            duplicate = reference + "\\" + path
 
-                                if item not in os.listdir(duplicate): shutil.move(reference + "\\" + path + "\\" + item, duplicate)
-                                else: os.remove(reference + "\\" + path + "\\" + item)
+                            for item in os.listdir(duplicate):
 
-                            os.rmdir(reference + "\\" + path)
+                                if item not in os.listdir(folder): shutil.move(duplicate + "\\" + item, folder)
+                                else: os.remove(duplicate + "\\" + item)
+
+                            os.rmdir(duplicate)
 
 
     def link_selector(self, link, title, label, channel, anchor):
@@ -1157,11 +1159,10 @@ class Downloader(object):
             start, stop = "1", "0"
             choose, done = "b", False
             count, add = 1, "no"
+            titles, done = [], False
+            begining, end, fields = [], [], []
 
             if tag.lower().rstrip().lstrip() in types[0]:
-
-                titles, fields = [], []
-                begining, end = [], []
                 
                 while not done:
 
@@ -1231,10 +1232,6 @@ class Downloader(object):
                     start, stop = "1", "0"
 
             elif (tag.lower().rstrip().lstrip() in types[1]):
-
-                titles, done = [], False
-
-                begining, end, fields = [], [], []
 
                 while not done:
 
@@ -1775,7 +1772,7 @@ class Downloader(object):
                 done = True
                 break
 
-            except:
+            except Exception as E:
 
                 time.sleep(2)
                 done = False
