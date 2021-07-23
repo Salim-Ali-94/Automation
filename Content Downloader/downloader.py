@@ -641,7 +641,7 @@ class Downloader(object):
             elif "book" in title.lower(): address = text.index("book")
             else: address = None
 
-            if ((address != None) & ((address != len(text) - 1))):
+            if ((address != None) & (address != len(text) - 1)):
 
                 value = text[address + 1]
                 if "-" in value: value = value.split("-")[0]
