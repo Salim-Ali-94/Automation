@@ -891,11 +891,11 @@ class Downloader(object):
                 directory = f"{user}\\Documents\\animation"
 
             os.chdir(directory)
-            if (os.path.isdir(tag) == False): os.makedirs(tag)
-            folder = f"{directory}\\{tag}"
+            if (os.path.isdir(tag.title()) == False): os.makedirs(tag.title())
+            folder = f"{directory}\\{tag.title()}"
             os.chdir(folder)
-            if (os.path.isdir(title) == False): os.makedirs(title)
-            destination = f"{folder}\\{title}"
+            if (os.path.isdir(title.title()) == False): os.makedirs(title.title())
+            destination = f"{folder}\\{title.title()}"
             os.chdir(current_directory)
             return destination
 
