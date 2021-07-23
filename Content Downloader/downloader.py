@@ -342,6 +342,7 @@ class Downloader(object):
                                 torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
                                 if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], folder, websites, 0)
                                 if (torrent == "empty"): done, results = False, []
+                                else: qbt.download_from_link(torrent, savepath = folder)
 
                     elif (field[index] == "series"):
 
@@ -433,7 +434,8 @@ class Downloader(object):
                                 torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
                                 if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], subfolder, websites, 1)
                                 if (torrent == "empty"): done, results = False, []
-                                else: counter += 1
+                                else: qbt.download_from_link(torrent, savepath = folder)
+                                if (torrent != "empty"): counter += 1
 
             else:
 
