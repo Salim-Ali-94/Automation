@@ -466,8 +466,8 @@ class Downloader(object):
             for index in range(len(title)):
 
                 tests, folders = [], []
-                for item in range(len(title[index])): tests.append(title[index][item] + " anime") if (len(title[index][item].split()) == 1) else tests.append(title[index][item])
-                for item in range(len(tests)): folders.append(self.directory_manager(tag.replace(" ", "_"), title = tests[item].replace(" ", "_")))
+                for item in range(len(title[index])): tests.append(title[index][item].replace("&",  "and") + " anime") if (len(title[index][item].split()) == 1) else tests.append(title[index][item].replace("&",  "and"))
+                for item in range(len(tests)): folders.append(self.directory_manager(tag.replace(" ", "_"), title = tests[item].replace(" ", "_"))) 
 
                 for element in range(len(link[index])):
 
@@ -617,6 +617,7 @@ class Downloader(object):
 
         header = folder.split("\\")[-1].replace("_", " ").replace("-", " ").replace("anime", "").replace("!", "").rstrip().lstrip()
         labels, links = self.anime_search(header)
+        if (len(links) == 0): labels, links = self.anime_search(header.replace("and", "&"))
         response = self.persist_search(links[0])
         anchors = self.driver.find_elements_by_css_selector("#catlist-listview li a")
         episodes = [item.text.lower() for item in anchors]
@@ -756,8 +757,14 @@ class Downloader(object):
 
             if (len(after) == 0):
 
-                busy = False
-                break
+                time.sleep(30)
+                after = os.listdir(folder)
+                for item in after: current = item if item not in before else current
+
+                if (len(after) == 0):
+
+                    busy = False
+                    break
 
             elif (current != ""):
 
