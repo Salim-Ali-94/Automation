@@ -618,6 +618,7 @@ class Downloader(object):
     def check_page(self, folder):
 
         header = folder.split("\\")[-1].replace("_", " ").replace("-", " ").replace("anime", "").replace("!", "").rstrip().lstrip()
+        if (len(header) > 40): header = header.replace("(", "") if ")" not in header else " ".join(header.split()[0:-1])
         labels, links = self.anime_search(header)
         if (len(links) == 0): labels, links = self.anime_search(header.replace("and", "&"))
         response = self.persist_search(links[0])
@@ -1049,7 +1050,8 @@ class Downloader(object):
                 field = self.selector()
                 os.system("cls")
                 comic, issue = "1", "1"
-                title = input(f"\nPlease input a search request for the {self.ordinal(count)} comic book(s): ")
+                if (count == 1): title = input(f"\nPlease input a search request for a particular comic book title: ")
+                else: title = input(f"\nPlease input a search request for the {self.ordinal(count)} comic book(s): ")
                 if (title == ""): title = self.test_query(title, 1)
                 self.persist_search(url)
                 search = self.driver.find_element_by_tag_name("input")
@@ -1177,8 +1179,11 @@ class Downloader(object):
 
                     field = self.selector()
                     os.system("cls")
-                    if (field == "episode"): title = input(f"\nPlease specify the title of the {self.ordinal(count)} series that you are searching for along with the required season and episode (format; [title] S[x]E[y] / if you're searching for anything lower than the tenth season and/or episode, use the [title] S[0x]E[0y] format instead): ")
+                    if ((field == "episode") & (count == 1)): title = input(f"\nPlease input a particular title for the series that you are searching for along with the required season and episode (format; [title] S[x]E[y] / if you're searching for anything lower than the tenth season and/or episode, use the [title] S[0x]E[0y] format instead): ")
+                    elif (field == "episode"): title = input(f"\nPlease specify the title of the {self.ordinal(count)} series that you are searching for along with the required season and episode (format; [title] S[x]E[y] / if you're searching for anything lower than the tenth season and/or episode, use the [title] S[0x]E[0y] format instead): ")
+                    elif ((field == "season") & (count == 1)): title, choose = input(f"\nPlease input a particular title for the series that you are searching for along with the required season (format; [title] S[x] / if you're searching for anything lower than the tenth season, use the [title] S[0x] format instead): "), input("\nDo you want to download the entire season?: \n\nA: yes \nB: no \n\n")
                     elif (field == "season"): title, choose = input(f"\nPlease specify the title of the {self.ordinal(count)} series that you are searching for along with the required season (format; [title] S[x] / if you're searching for anything lower than the tenth season, use the [title] S[0x] format instead): "), input("\nDo you want to download the entire season?: \n\nA: yes \nB: no \n\n")
+                    elif ((field == "series") & (count == 1)): title, choose = input(f"\nPlease input a particular title for the series that you are searching for (format; [title]): "), input("\nDo you want to download the entire series?: \n\nA: yes \nB: no \n\n")
                     elif (field == "series"): title, choose = input(f"\nPlease specify the title of the {self.ordinal(count)} series that you are searching for (format; [title]): "), input("\nDo you want to download the entire series?: \n\nA: yes \nB: no \n\n")
                     check = title.split()[-1]
 
@@ -1245,7 +1250,8 @@ class Downloader(object):
                 while not done:
 
                     os.system("cls")
-                    title = input(f"\nPlease input a search request for the {self.ordinal(count)} movie: ")
+                    if (count == 1): title = input(f"\nPlease input a particular title for the movie that your are searching for: ")
+                    else: title = input(f"\nPlease input a search request for the {self.ordinal(count)} movie: ")
                     os.system("cls")
                     add = input("\nAre you adding more movies to the download schedule?: \n\nA: yes \nB: no \n\n")
 
@@ -1280,7 +1286,8 @@ class Downloader(object):
 
                 os.system("cls")
                 title, site, header = [], [], []
-                show = input(f"\nPlease specify a title for the {self.ordinal(count)} show that you are searching for: ")
+                if (count == 1): show = input(f"\nPlease input a particular title for the show that you are searching for: ")
+                else: show = input(f"\nPlease specify a title for the {self.ordinal(count)} show that you are searching for: ")
                 if (show == ""): show = self.test_query(show, 1)
                 text = show.lower().rstrip().lstrip()
                 labels, anchors = self.anime_search(show)
