@@ -478,7 +478,9 @@ class Downloader(object):
                     for item in range(len(link[index][element])):
 
                         os.system("cls")
-                        print(f"\nCurrently downloading '{chapter[index][element][item]}' from {title[index][0]} [{item + 1} / {len(link[index][element])} ({index + 1} / {len(title)})] \n\n")
+                        if ((len(title) == 1) & (len(link[index][element]) == 1)): print(f"\nCurrently downloading '{chapter[index][element][item]}' from {title[index][0]} \n\n")
+                        elif (len(title) == 1): print(f"\nCurrently downloading '{chapter[index][element][item]}' from {title[index][0]} ({item + 1} / {len(link[index][element])}) \n\n")
+                        else: print(f"\nCurrently downloading '{chapter[index][element][item]}' from {title[index][0]} [{item + 1} / {len(link[index][element])} ({index + 1} / {len(title)})] \n\n")
                         settings = Settings()
                         header, season, episode, description, url = self.information(link[index][element][item])
                         season = re.search(r"(\d+)", season).group(1).zfill(settings.get_setting("seasonPadding"))
@@ -569,11 +571,18 @@ class Downloader(object):
 
     def inspect_file(self, file):
 
-        duration = self.video_duration(file)
-        bits = os.path.getsize(file)
-        megabytes, minutes = bits / 1e6, duration / 60
-        ratio = megabytes / minutes
-        if (ratio < 2.4): os.remove(file)
+        try:
+
+            duration = self.video_duration(file)
+            bits = os.path.getsize(file)
+            megabytes, minutes = bits / 1e6, duration / 60
+            ratio = megabytes / minutes
+            if (ratio < 2.4): os.remove(file)
+
+        except Exception as E: 
+
+            print(E)
+            os.remove(file)
 
 
     def wco_download(self, link, folder, title, tag):
@@ -617,7 +626,7 @@ class Downloader(object):
 
     def check_page(self, folder):
 
-        header = folder.split("\\")[-1].replace("_", " ").replace("-", " ").replace("anime", "").replace("!", "").rstrip().lstrip()
+        header = folder.lower().split("\\")[-1].replace("_", " ").replace("-", " ").replace("anime", "").replace("!", "").rstrip().lstrip()
         if (len(header) > 40): header = header.replace("(", "") if ")" not in header else " ".join(header.split()[0:-1])
         labels, links = self.anime_search(header)
         if (len(links) == 0): labels, links = self.anime_search(header.replace("and", "&"))
@@ -887,6 +896,7 @@ class Downloader(object):
 
                 if (os.path.isdir("TORRENTS") == False): os.makedirs("TORRENTS")
                 directory = f"{user}\\Documents\\TORRENTS"
+                tag, title = tag.title(), title.title()
 
             elif (self.category == "animation"):
 
@@ -894,11 +904,11 @@ class Downloader(object):
                 directory = f"{user}\\Documents\\animation"
 
             os.chdir(directory)
-            if (os.path.isdir(tag.title()) == False): os.makedirs(tag.title())
-            folder = f"{directory}\\{tag.title()}"
+            if (os.path.isdir(tag) == False): os.makedirs(tag)
+            folder = f"{directory}\\{tag}"
             os.chdir(folder)
-            if (os.path.isdir(title.title()) == False): os.makedirs(title.title())
-            destination = f"{folder}\\{title.title()}"
+            if (os.path.isdir(title) == False): os.makedirs(title)
+            destination = f"{folder}\\{title}"
             os.chdir(current_directory)
             return destination
 
