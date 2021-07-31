@@ -39,7 +39,7 @@ class Downloader(object):
     numbers = lambda self, start, end: [str(index) for index in range(start, end + 1)]
     video_duration = lambda self, filename: float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filename], stdout = subprocess.PIPE, stderr = subprocess.STDOUT).stdout)
 
-    def __init__(self, browser_path, qbit_admin = None, qbit_password = None):
+    def __init__(self, browser_path, qbit_admin, qbit_password):
 
         self.seasons, self.episodes = [f"s0{index}" for index in range(1, 9 + 1)], []
         for index in range(10, 100 + 1): self.seasons.append(f"s{index}")
