@@ -253,6 +253,7 @@ class Downloader(object):
 
                     if (field[index] == "episode"):
 
+                        pin = title[index].lower().split()[-1]
                         search_link = "?search_key=" + title[index] + "&site="
                         results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
                         pages = [result[1] for result in results]
@@ -263,7 +264,7 @@ class Downloader(object):
                         leechers = [result["leeches"] for result in data]
                         sizes = [result["size"] for result in data]
                         links = [result["link"] for result in data]
-                        torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
+                        torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, pin)
                         if (torrent == "empty"): pass
                         else: qbt.download_from_link(torrent, savepath = folder)
 
@@ -271,11 +272,13 @@ class Downloader(object):
 
                         while not done:
 
+                            torrent = ""
+                            pin = title[index].lower().split()[-1]
                             search_link = "?search_key=" + title[index] + " complete" + "&site="
                             if (torrent != "empty"): results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
                             data, sites = [], []
                             complete, skip = False, False
-                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index], folder, websites, 0)
+                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index], folder, websites, counter, 0, pin)
 
                             if ((len(results) == 0) | (count != 1) | (int(final[index]) != 0)):
 
@@ -310,7 +313,7 @@ class Downloader(object):
                                             leechers = [result["leeches"] for result in data]
                                             sizes = [result["size"] for result in data]
                                             links = [result["link"] for result in data]
-                                            torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
+                                            torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, number)
                                             if (torrent == "empty"): complete, done = True, True
                                             else: qbt.download_from_link(torrent, savepath = folder)
                                             data, sites = [], []
@@ -334,7 +337,7 @@ class Downloader(object):
                                         skip = False
                                         complete = False
 
-                            else:
+                            elif ((torrent == "empty") | (torrent == "")):
 
                                 done = True
                                 pages = [result[1] for result in results]
@@ -345,8 +348,8 @@ class Downloader(object):
                                 leechers = [result["leeches"] for result in data]
                                 sizes = [result["size"] for result in data]
                                 links = [result["link"] for result in data]
-                                torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
-                                if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], folder, websites, 0)
+                                torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, pin)
+                                if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], folder, websites, counter, 0, pin)
                                 if (torrent == "empty"): done, results = False, []
                                 else: qbt.download_from_link(torrent, savepath = folder)
 
@@ -354,6 +357,7 @@ class Downloader(object):
 
                         while not done:
 
+                            torrent = ""
                             if ((int(final[index]) != 0) & (counter == int(final[index]) + 1)): break
                             season = "0" if (counter < 10) else ""
                             search_link = "?search_key=" + title[index] + " S" + season + str(counter) + " complete" + "&site="
@@ -362,9 +366,10 @@ class Downloader(object):
                             subfolder = folder + f"\\{ID}"
                             if (os.path.isdir(subfolder) == False): os.makedirs(subfolder)
                             complete, skip, count = False, False, 1
+                            pin = "s" + season + str(counter)
                             data, sites = [], []
-                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index], subfolder, websites, 1)
-                            if (torrent != "empty"): counter += 1
+                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index], subfolder, websites, counter, 1, pin)
+                            if ((torrent != "empty") & (torrent != "")): counter += 1
 
                             if (len(results) == 0):
 
@@ -395,7 +400,7 @@ class Downloader(object):
                                             leechers = [result["leeches"] for result in data]
                                             sizes = [result["size"] for result in data]
                                             links = [result["link"] for result in data]
-                                            torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
+                                            torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, number)
                                             if (torrent == "empty"): complete, done, torrent = True, False, ""
                                             else: qbt.download_from_link(torrent, savepath = folder)
                                             data, sites = [], []
@@ -427,7 +432,7 @@ class Downloader(object):
                                         torrent = ""
                                         count += 1
 
-                            else:
+                            elif ((torrent == "empty") | (torrent == "")):
 
                                 pages = [result[1] for result in results]
                                 for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
@@ -437,11 +442,11 @@ class Downloader(object):
                                 leechers = [result["leeches"] for result in data]
                                 sizes = [result["size"] for result in data]
                                 links = [result["link"] for result in data]
-                                torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
-                                if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], subfolder, websites, 1)
+                                torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, pin)
+                                if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], subfolder, websites, counter, 1, pin)
                                 if (torrent == "empty"): done, results = False, []
-                                else: qbt.download_from_link(torrent, savepath = folder)
-                                if (torrent != "empty"): counter += 1
+                                else: qbt.download_from_link(torrent, savepath = subfolder)
+                                if ((torrent != "empty") & (torrent != "")): counter += 1
 
             else:
 
@@ -598,11 +603,12 @@ class Downloader(object):
         os.rename(folder + "\\" + title, folder + "\\" + tag)
 
 
-    def alternative(self, server, title, folder, websites, indicator):
+    def alternative(self, server, title, folder, websites, indicator, pin = None):
 
         data, sites, results = [], [], []
         url = "http://samcloud.tplinkdns.com:50000"
         getTorrents = "/getTorrents"
+        pin = pin.replace("s", "season ").replace(pin[1:], str(int(pin[1:])))
         if (indicator == 0): test = " ".join(title.lower().split()[0:-1]) + " " + title.lower().split()[-1].replace(title.lower().split()[-1].split("s")[-1], "").replace("s", "season ") + str(int(title.lower().split()[-1].split("s")[-1]))
         elif (indicator == 1): test = title.lower().rstrip().lstrip() + " season " + str(counter)
         search_link = "?search_key=" + test + " complete" + "&site="
@@ -618,7 +624,7 @@ class Downloader(object):
             leechers = [result["leeches"] for result in data]
             sizes = [result["size"] for result in data]
             links = [result["link"] for result in data]
-            torrent = self.torrent_selector(test, links, titles, seeders, leechers, sizes, sites)
+            torrent = self.torrent_selector(test, links, titles, seeders, leechers, sizes, sites, pin)
             if (torrent != "empty"): server.download_from_link(torrent, savepath = folder)
             else: torrent, results = "empty", []
 
@@ -1583,7 +1589,7 @@ class Downloader(object):
             return titles, sites, headers, tag
 
 
-    def torrent_selector(self, title, links, titles, seeders, leechers, sizes, sites):
+    def torrent_selector(self, title, links, titles, seeders, leechers, sizes, sites, ID = None):
 
         score, best, magnet, test = 0, 0, None, []
         url = "http://samcloud.tplinkdns.com:50000"
@@ -1603,27 +1609,31 @@ class Downloader(object):
             response = requests.get(url + getData + fetch_link)
             compare = " ".join(titles[index].split("."))
             score = fw.ratio(compare.lower().rstrip().lstrip(), target)
-            if (score < 34): score, flag = self.test_similarity(compare.lower().rstrip().lstrip(), target), True
+            if (score < 31): score, flag = self.test_similarity(compare.lower().rstrip().lstrip(), target), True
 
             if (((score > 50) & (response.json() != "Invalid Request") & (flag == True)) |
-                ((score >= 34) & (response.json() != "Invalid Request") & (flag == False))):
+                ((score >= 31) & (response.json() != "Invalid Request") & (flag == False))):
 
                 if (check == True):
 
                     if (((good_quality[0] in titles[index]) & (good_quality[1] in titles[index])) | 
                         (("hd" in titles[index].lower()) & (good_quality[0] not in titles[index]) & (good_quality[1] not in titles[index]))):
 
+                        if ((ID.lower() in titles[index].lower()) | (ID == None)):
+
+                            magnet = response.json()["magnet"]
+                            torrent.append(magnet), leech.append(leechers[index])
+                            seed.append(seeders[index]), byte.append(sizes[index])
+                            tag.append(compare)
+
+                else:
+
+                    if ((ID.lower() in titles[index].lower()) | (ID == None)):
+
                         magnet = response.json()["magnet"]
                         torrent.append(magnet), leech.append(leechers[index])
                         seed.append(seeders[index]), byte.append(sizes[index])
                         tag.append(compare)
-
-                else:
-
-                    magnet = response.json()["magnet"]
-                    torrent.append(magnet), leech.append(leechers[index])
-                    seed.append(seeders[index]), byte.append(sizes[index])
-                    tag.append(compare)
 
         if (len(torrent) == 0): magnet = "empty"
         else: magnet = self.choose_magnet(torrent, seed, leech, byte, tag)
