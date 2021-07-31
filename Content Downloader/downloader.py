@@ -39,7 +39,7 @@ class Downloader(object):
     numbers = lambda self, start, end: [str(index) for index in range(start, end + 1)]
     video_duration = lambda self, filename: float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filename], stdout = subprocess.PIPE, stderr = subprocess.STDOUT).stdout)
 
-    def __init__(self, browser_path, qbit_admin, qbit_password):
+    def __init__(self, browser_path, qbit_admin = None, qbit_password = None):
 
         self.seasons, self.episodes = [f"s0{index}" for index in range(1, 9 + 1)], []
         for index in range(10, 100 + 1): self.seasons.append(f"s{index}")
@@ -89,23 +89,7 @@ class Downloader(object):
             elif (category.lower().rstrip().lstrip() == "d"): self.category = "torrent"
             elif (category.lower().rstrip().lstrip() == "e"): self.category = "animation"
 
-        elif (self.category == "audio"):
-
-            os.system("cls")
-            preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
-
-            while preference.lower().rstrip().lstrip() not in self.options[0:4]:
-
-                os.system("cls")
-                preference = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
-
-            if (preference.lower().rstrip().lstrip() == "a"): preference = "yes"
-            elif (preference.lower().rstrip().lstrip() == "b"): channel = None
-            os.system("cls")
-            if (preference == "yes"): channel = input("\nPlease enter a channel to search for your content: ")
-            return channel
-
-        elif (self.category == "video"):
+        elif ((self.category == "video") | (self.category == "audio")):
 
             os.system("cls")
             field = input("\nAre you downloading a playlist or a single file: \n\nA: single video \nB: playlist \n\n")
@@ -155,28 +139,50 @@ class Downloader(object):
         
         if (self.category == "audio"):
 
-            tag, link, title, label, channel, anchor, length = self.extractor()
+            url = None
+            tag, link, title, label, channel, anchor, length, field = self.extractor()
             if (len(link) > 1): url = self.show_results(label, link, anchor, length)
-            elif ((len(link) == 1) | (url == None)): url = self.link_selector(link, title, label, channel, anchor)
-            data = ytdl.YoutubeDL().extract_info(url = url, download = False)
-            file_name = f"{data['title']}"
-            for character in self.restrictions: file_name = file_name.replace(character, "-")
-            header = f"{file_name}.%(ext)s"
-            configuration = {"format": "bestaudio/best",
-                             "keepvideo": False,
-                             "outtmpl": header,
-                             "postprocessors": [{"key": "FFmpegExtractAudio",
-                                                 "preferredcodec": "mp3",
-                                                 "preferredquality": "192"}]}
-            with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
-            try: self.directory_manager(tag, file_name + ".mp3")
-            except: self.directory_manager(tag, self.slugify(file_name) + ".mp3")
+            if ((len(link) == 1) | (url == None)): url = self.link_selector(link, title, label, channel, anchor)
+
+            if (field == "single"):
+
+                data = ytdl.YoutubeDL().extract_info(url = url, download = False)
+                file_name = f"{data['title']}"
+                for character in self.restrictions: file_name = file_name.replace(character, "-")
+                header = f"{file_name}.%(ext)s"
+                configuration = {"format": "bestaudio/best",
+                                 "keepvideo": False,
+                                 "outtmpl": header,
+                                 "postprocessors": [{"key": "FFmpegExtractAudio",
+                                                     "preferredcodec": "mp3",
+                                                     "preferredquality": "192"}]}
+                with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
+                try: self.directory_manager(tag, file_name + ".mp3")
+                except: self.directory_manager(tag, self.slugify(file_name) + ".mp3")
+
+            elif (field == "playlist"):
+
+                data = ytdl.YoutubeDL().extract_info(url = url, download = True)
+                configuration = {"format": "22", "keepvideo": True}
+                current_directory, folder = self.directory_manager(tag, field = field)
+                with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
+
+                for mp4 in os.listdir(folder):
+
+                    if mp4.endswith(self.extensions):
+
+                        mp3 = " ".join(mp4.split(".")[0:-1]) + ".mp3"
+                        cmd = ["ffmpeg", "-i"] + [mp4] + ["-vn"] + [mp3]
+                        subprocess.run(cmd, shell = True)
+
+                self.delete_copy(current_directory, folder)
 
         elif (self.category == "video"):
 
-            tag, link, title, label, channel, anchor, length = self.extractor()
+            url = None
+            tag, link, title, label, channel, anchor, length, field = self.extractor()
             if (len(link) > 1): url = self.show_results(label, link, anchor, length)
-            elif ((len(link) == 1) | (url == None)): url = self.link_selector(link, title, label, channel, anchor)
+            if ((len(link) == 1) | (url == None)): url = self.link_selector(link, title, label, channel, anchor)
             data = ytdl.YoutubeDL().extract_info(url = url, download = True)
             configuration = {"format": "22", "keepvideo": True}
             current_directory, folder = self.directory_manager(tag)
@@ -579,7 +585,7 @@ class Downloader(object):
             ratio = megabytes / minutes
             if (ratio < 2.4): os.remove(file)
 
-        except Exception as E: 
+        except Exception as E:
 
             print(E)
             os.remove(file)
@@ -841,7 +847,7 @@ class Downloader(object):
         return Titles, Links
 
 
-    def directory_manager(self, tag, file = None, title = None):
+    def directory_manager(self, tag, file = None, title = None, field = None):
 
         current_directory = os.getcwd()
         component = re.split(self.standard, current_directory)
@@ -850,7 +856,7 @@ class Downloader(object):
         path = f"{user}\\Documents"
         os.chdir(path)
 
-        if (self.category == "audio"):
+        if ((self.category == "audio") & (field != "playlist")):
 
             audio = file
             if (os.path.isdir("Audio") == False): os.makedirs("Audio")
@@ -861,7 +867,7 @@ class Downloader(object):
             folder = os.listdir(directory)
             os.chdir(current_directory)
 
-            if file not in folder: 
+            if file not in folder:
 
                 shutil.move(current_directory + "\\" + file, directory)
 
@@ -871,10 +877,11 @@ class Downloader(object):
                 os.rename(file, audio)
                 shutil.move(current_directory + "\\" + audio, directory)
 
-        elif (self.category == "video"):
+        elif ((self.category == "video") | (field == "playlist")):
 
-            if (os.path.isdir("Video") == False): os.makedirs("Video")
-            directory = f"{user}\\Documents\\Video"
+            if (field != "playlist"): os.makedirs("Video") if (os.path.isdir("Video") == False) else None
+            else: os.makedirs("Audio") if (os.path.isdir("Audio") == False) else None
+            directory = f"{user}\\Documents\\{self.category.title()}"
             os.chdir(directory)
             if (os.path.isdir(tag) == False): os.makedirs(tag)
             folder = f"{directory}\\{tag}"
@@ -915,7 +922,7 @@ class Downloader(object):
 
     def delete_copy(self, current_directory, directory):
 
-        if (self.category == "video"):
+        if ((self.category == "video") | (self.category == "audio")):
 
             reference = os.listdir(directory)
             compare = os.listdir(current_directory)
@@ -926,6 +933,15 @@ class Downloader(object):
                 file = item.split(".")[0]
                 data = os.path.join(current_directory, item)
                 if file in holder: os.remove(data)
+
+            if (self.category == "audio"):
+
+                for item in reference:
+
+                    if item.endswith(self.extensions):
+
+                        file = directory + "\\" + item
+                        os.remove(file)
 
         elif (self.category == "animation"):
 
@@ -989,29 +1005,13 @@ class Downloader(object):
 
     def extractor(self, field = "volume"):
 
-        if (self.category == "audio"):
-
-            os.system("cls")
-            tag = input("\nWhat category of audio are you downloading? (podcast, audiobook etc): ")
-            status = [character for character in self.restrictions if character in tag]
-            if ((tag == "") | (status != [])): tag = self.test_query(tag, 0)
-            channel = self.selector()
-            os.system("cls")
-            title = input("\nPlease input a search request for the required file: ")
-            if (title == ""): title = self.test_query(title, 1)
-            result = YoutubeSearch(title, max_results = 20).to_dict()
-            link = ["https://www.youtube.com" + entry['url_suffix'] for entry in result]
-            label = [entry['title'] for entry in result]
-            anchor = [entry['channel'] for entry in result]
-            length = [entry['duration'] for entry in result]
-            return tag, link, title, label, channel, anchor, length
-
-        elif (self.category == "video"):
+        if ((self.category == "video") | (self.category == "audio")):
 
             channel, anchor = None, []
             field = self.selector()
             os.system("cls")
-            tag = input("\nWhat category of video are you downloading? (tutorial, lecture etc): ")
+            if (self.category == "video"): tag = input("\nWhat category of video are you downloading? (tutorial, lecture etc): ")
+            if (self.category == "audio"): tag = input("\nWhat category of audio are you downloading? (podcast, audiobook etc): ")
             status = [character for character in self.restrictions if character in tag]
             if ((tag == "") | (status != [])): tag = self.test_query(tag, 0)
             os.system("cls")
@@ -1028,7 +1028,8 @@ class Downloader(object):
             if (preference == True): channel = input("\nWhich channel will you be downloading your content from?: ")
             if (channel == ""): channel = self.test_query(channel, 1)
             os.system("cls")
-            title = input("\nPlease input a search request for the required video(s): ")
+            if (self.category == "video"): title = input("\nPlease input a search request for the required video(s): ")
+            if (self.category == "audio"): title = input("\nPlease input a search request for the required file: ")
             if (title == ""): title = self.test_query(title, 1)
 
             if (field == "single"):
@@ -1047,7 +1048,7 @@ class Downloader(object):
                 anchor = [entry["channel"]["name"] for entry in result]
                 length = []
 
-            return tag, link, title, label, channel, anchor, length
+            return tag, link, title, label, channel, anchor, length, field
 
         elif (self.category == "comic book"):
 
@@ -1800,6 +1801,7 @@ class Downloader(object):
 
             except Exception as E:
 
+                print(E)
                 time.sleep(2)
                 done = False
                 continue
@@ -1924,16 +1926,16 @@ class Downloader(object):
 
             file.write(f"{self.driver.service.process.pid}")
             for child in children: file.write(f"\n{child.pid}")
-
                 
-
+                
+                
                 
 if __name__ == "__main__":
     
     # download qbit-torrent, configure server UI manager and setup a username & password
     user = "" # qbit-torrent server UI manager login name
     password = "" # qbit-torrent server UI manager login password
-    path = "C:\\chrome_driver\\chromedriver" # specify the folder where your chromium executable is stored    
+    path = os.getcwd() + "\\chromedriver" # keep the chromium executable in the same folder as this program
     downloader = Downloader(path, user, password)
     downloader.search()
     downloader.driver.quit()
