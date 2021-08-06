@@ -1690,7 +1690,7 @@ class Downloader(object):
                     if (((good_quality[0] in titles[index]) & (good_quality[1] in titles[index])) | 
                         (("hd" in titles[index].lower()) & (good_quality[0] not in titles[index]) & (good_quality[1] not in titles[index]))):
 
-                        if ((ID.lower() in titles[index].lower()) | (ID == None)):
+                        if ((ID.lower() in titles[index].lower()) | (ID == "")):
 
                             magnet = response.json()["magnet"]
                             torrent.append(magnet), leech.append(leechers[index])
@@ -1699,7 +1699,7 @@ class Downloader(object):
 
                 else:
 
-                    if ((ID.lower() in titles[index].lower()) | (ID == None)):
+                    if ((ID.lower() in titles[index].lower()) | (ID == "")):
 
                         magnet = response.json()["magnet"]
                         torrent.append(magnet), leech.append(leechers[index])
