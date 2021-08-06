@@ -1660,7 +1660,7 @@ class Downloader(object):
             return titles, sites, headers, tag
 
 
-    def torrent_selector(self, title, links, titles, seeders, leechers, sizes, sites, ID = None):
+    def torrent_selector(self, title, links, titles, seeders, leechers, sizes, sites, ID = ""):
 
         score, best, magnet, test = 0, 0, None, []
         url = "http://samcloud.tplinkdns.com:50000"
