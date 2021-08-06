@@ -92,12 +92,12 @@ class Downloader(object):
         elif ((self.category == "video") | (self.category == "audio")):
 
             os.system("cls")
-            field = input("\nAre you downloading a playlist or a single file: \n\nA: single video \nB: playlist \n\n")
+            field = input("\nAre you downloading a playlist or a single file: \n\nA: single file \nB: playlist \n\n")
 
             while field.lower().rstrip().lstrip() not in self.options[0:4]:
 
                 os.system("cls")
-                field = input("\nInvalid entry, please select an available option: \n\nA: single video \nB: playlist \n\n")
+                field = input("\nInvalid entry, please select an available option: \n\nA: single file \nB: playlist \n\n")
 
             if (field.lower().rstrip().lstrip() == "a"): field = "single"
             elif (field.lower().rstrip().lstrip() == "b"): field = "playlist"
@@ -139,55 +139,77 @@ class Downloader(object):
         
         if (self.category == "audio"):
 
-            url = None
-            tag, link, title, label, channel, anchor, length, field = self.extractor()
-            if (len(link) > 1): url = self.show_results(label, link, anchor, length)
-            if ((len(link) == 1) | (url == None)): url = self.link_selector(link, title, label, channel, anchor)
+            tag, link, field, label = self.extractor()
 
-            if (field == "single"):
+            for index in range(len(link)):
 
-                data = ytdl.YoutubeDL().extract_info(url = url, download = False)
-                file_name = f"{data['title']}"
-                for character in self.restrictions: file_name = file_name.replace(character, "-")
-                header = f"{file_name}.%(ext)s"
-                configuration = {"format": "bestaudio/best",
-                                 "keepvideo": False,
-                                 "outtmpl": header,
-                                 "postprocessors": [{"key": "FFmpegExtractAudio",
-                                                     "preferredcodec": "mp3",
-                                                     "preferredquality": "192"}]}
-                with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
-                try: self.directory_manager(tag, file_name + ".mp3")
-                except: self.directory_manager(tag, self.slugify(file_name) + ".mp3")
+                if (field[index] == "single"):
 
-            elif (field == "playlist"):
+                    data = ytdl.YoutubeDL().extract_info(url = link[index], download = False)
+                    file_name = f"{data['title']}"
+                    for character in self.restrictions: file_name = file_name.replace(character, "-")
+                    header = f"{file_name}.%(ext)s"
+                    configuration = {"format": "bestaudio/best",
+                                     "keepvideo": False,
+                                     "outtmpl": header,
+                                     "postprocessors": [{"key": "FFmpegExtractAudio",
+                                                         "preferredcodec": "mp3",
+                                                         "preferredquality": "192"}]}
 
-                data = ytdl.YoutubeDL().extract_info(url = url, download = True)
-                configuration = {"format": "22", "keepvideo": True}
-                current_directory, folder = self.directory_manager(tag, field = field)
-                with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
+                    try: 
 
-                for mp4 in os.listdir(folder):
+                        with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
 
-                    if mp4.endswith(self.extensions):
+                    except: 
 
-                        mp3 = " ".join(mp4.split(".")[0:-1]) + ".mp3"
-                        cmd = ["ffmpeg", "-i"] + [mp4] + ["-vn"] + [mp3]
-                        subprocess.run(cmd, shell = True)
+                        pass
 
-                self.delete_copy(current_directory, folder)
+                    try: self.directory_manager(tag[index], file_name + ".mp3")
+                    except: self.directory_manager(tag[index], self.slugify(file_name) + ".mp3")
+
+                elif (field[index] == "playlist"):
+
+                    folder = self.directory_manager(tag[index], title = label[index], field = field[index])
+                    data = ytdl.YoutubeDL().extract_info(url = link[index], download = True)
+                    configuration = {"format": "22", "keepvideo": True}
+
+                    try: 
+
+                        with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
+
+                    except: 
+
+                        pass
+
+                    for mp4 in os.listdir(folder):
+
+                        if mp4.endswith(self.extensions):
+
+                            mp3 = " ".join(mp4.split(".")[0:-1]) + ".mp3"
+                            cmd = ["ffmpeg", "-n", "-i"] + [mp4] + ["-vn"] + [mp3]
+                            subprocess.run(cmd, shell = True)
+
+                    self.delete_copy(folder, field = field[index])
 
         elif (self.category == "video"):
 
-            url = None
-            tag, link, title, label, channel, anchor, length, field = self.extractor()
-            if (len(link) > 1): url = self.show_results(label, link, anchor, length)
-            if ((len(link) == 1) | (url == None)): url = self.link_selector(link, title, label, channel, anchor)
-            data = ytdl.YoutubeDL().extract_info(url = url, download = True)
-            configuration = {"format": "22", "keepvideo": True}
-            current_directory, folder = self.directory_manager(tag)
-            with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
-            self.delete_copy(current_directory, folder)
+            tag, link, field, label = self.extractor()
+
+            for index in range(len(link)):
+
+                folder = self.directory_manager(tag[index], title = label[index])
+                data = ytdl.YoutubeDL().extract_info(url = link[index], download = True)
+                configuration = {"format": "22", "keepvideo": True}
+
+                try: 
+
+                    with ytdl.YoutubeDL(configuration) as file: file.download([data["webpage_url"]])
+
+                except: 
+
+                    pass
+
+                self.delete_copy(folder)
 
         elif (self.category == "comic book"):
 
@@ -588,18 +610,18 @@ class Downloader(object):
             bits = os.path.getsize(file)
             megabytes, minutes = bits / 1e6, duration / 60
             ratio = megabytes / minutes
-            if (ratio < 2.4): os.remove(file)
+            if (ratio < 2.5): os.remove(file)
 
-        except Exception as E:
+        except:
 
-            print(E)
-            os.remove(file)
+            try: os.remove(file)
+            except: pass
 
 
     def wco_download(self, link, folder, title, tag):
 
-        subprocess.Popen(f"python crawler.py -i {link} -o {folder}", shell = True)
-        self.monitor_download(link, folder)
+        process = subprocess.Popen(f"python crawler.py -i {link} -o {folder}", shell = True)
+        self.monitor_download(link, folder, process, title)
         os.rename(folder + "\\" + title, folder + "\\" + tag)
 
 
@@ -764,7 +786,7 @@ class Downloader(object):
         return url
 
 
-    def monitor_download(self, site, folder):
+    def monitor_download(self, site, folder, process, file):
 
         before = os.listdir(folder)
         busy, kb, previous = True, 0, ""
@@ -800,7 +822,7 @@ class Downloader(object):
                     bits = os.path.getsize(folder + "\\" + current)
                     megabytes, minutes = bits / 1e6, duration / 60
                     ratio = megabytes / minutes
-                    if (ratio < 2.4): subprocess.Popen(f"python crawler.py -i {site} -o {folder}", shell = True)
+                    if (ratio < 2.5): process.kill(), os.remove(file), subprocess.Popen(f"python crawler.py -i {site} -o {folder}", shell = True)
                     else: busy = False
 
             kb = KB
@@ -892,7 +914,10 @@ class Downloader(object):
             if (os.path.isdir(tag) == False): os.makedirs(tag)
             folder = f"{directory}\\{tag}"
             os.chdir(folder)
-            return current_directory, folder
+            if ((os.path.isdir(title) == False) & (field == "playlist")): os.makedirs(title)
+            if (field == "playlist"): folder = f"{folder}\\{title}"
+            if (field == "playlist"): os.chdir(folder)
+            return folder
 
         elif (self.category == "comic book"):
 
@@ -926,9 +951,30 @@ class Downloader(object):
             return destination
 
 
-    def delete_copy(self, current_directory, directory):
+    def delete_copy(self, current_directory, directory = None, field = None):
 
-        if ((self.category == "video") | (self.category == "audio")):
+        if ((self.category == "video") | (field == "playlist")):
+
+            delete = []
+            reference = os.listdir(current_directory)
+            compare = [item.split(".")[0] for item in reference]
+
+            for item in reference:
+
+                if item.endswith(self.extensions):
+
+                    count = compare.count(item.split(".")[0])
+                    if ((count > 1) & (item.split(".")[0] not in delete)): delete.append(item.split(".")[0])
+
+            for item in reference:
+
+                if (((self.category == "video") & (item.endswith(".mp4") == False) & (item.split(".")[0] in delete)) |
+                    ((self.category == "audio") & (item.endswith(".mp3") == False) & (item.split(".")[0] in delete))):
+
+                    file = current_directory + "\\" + item
+                    os.remove(file)
+
+        elif (self.category == "audio"):
 
             reference = os.listdir(directory)
             compare = os.listdir(current_directory)
@@ -937,17 +983,15 @@ class Downloader(object):
             for item in compare:
 
                 file = item.split(".")[0]
-                data = os.path.join(current_directory, item)
+                data = current_directory + "\\" + item
                 if file in holder: os.remove(data)
 
-            if (self.category == "audio"):
+            for item in reference:
 
-                for item in reference:
+                if item.endswith(self.extensions):
 
-                    if item.endswith(self.extensions):
-
-                        file = directory + "\\" + item
-                        os.remove(file)
+                    file = directory + "\\" + item
+                    os.remove(file)
 
         elif (self.category == "animation"):
 
@@ -1013,48 +1057,75 @@ class Downloader(object):
 
         if ((self.category == "video") | (self.category == "audio")):
 
-            channel, anchor = None, []
-            field = self.selector()
-            os.system("cls")
-            if (self.category == "video"): tag = input("\nWhat category of video are you downloading? (tutorial, lecture etc): ")
-            if (self.category == "audio"): tag = input("\nWhat category of audio are you downloading? (podcast, audiobook etc): ")
-            status = [character for character in self.restrictions if character in tag]
-            if ((tag == "") | (status != [])): tag = self.test_query(tag, 0)
-            os.system("cls")
-            preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
+            count, done = 1, False
+            channel = None
+            links, titles, duration, fields = [], [], [], []
+            channels, anchors, labels, tags = [], [], [], []
 
-            while preference.lower().rstrip().lstrip() not in self.options[0:4]:
+            while not done:
 
+                field = self.selector()
                 os.system("cls")
-                preference = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
+                if (self.category == "video"): tag = input("\nWhat category of video are you downloading? (tutorial, lecture etc): ")
+                if (self.category == "audio"): tag = input("\nWhat category of audio are you downloading? (podcast, audiobook etc): ")
+                status = [character for character in self.restrictions if character in tag]
+                if (((tag == "") | (status != []))): tag = self.test_query(tag, 0)
+                os.system("cls")
+                preference = input("\nDo you have a preferred channel to download your file from?: \n\nA: yes \nB: no \n\n")
 
-            if (preference.lower().rstrip().lstrip() == "a"): preference = True
-            elif (preference.lower().rstrip().lstrip() == "b"): preference = False
+                while preference.lower().rstrip().lstrip() not in self.options[0:4]:
+
+                    os.system("cls")
+                    preference = input("\nInvalid entry, please select an available option: \n\nA: yes \nB: no \n\n")
+
+                if (preference.lower().rstrip().lstrip() == "a"): preference = True
+                elif (preference.lower().rstrip().lstrip() == "b"): preference = False
+                os.system("cls")
+                if (preference == True): channel = input("\nWhich channel will you be downloading your content from?: ")
+                if (channel == ""): channel = self.test_query(channel, 1)
+                os.system("cls")
+                if ((self.category == "video") & (count == 1)): title = input("\nPlease input a search request for a particular video that you are looking for: ")
+                elif ((self.category == "audio") & (count == 1)): title = input("\nPlease input a search request for a particular audio file that you are looking for: ")
+                elif ((self.category == "video")): title = input(f"\nPlease input a search request for the {self.ordinal(count)} video(s): ")
+                elif ((self.category == "audio")): title = input(f"\nPlease input a search request for the {self.ordinal(count)} file(s): ")
+                if (title == ""): title = self.test_query(title, 1)
+
+                if (field == "single"):
+
+                    result = YoutubeSearch(title, max_results = 20).to_dict()
+                    link = ["https://www.youtube.com" + entry["url_suffix"] for entry in result]
+                    label = [entry["title"] for entry in result]
+                    anchor = [entry["channel"] for entry in result]
+                    length = [entry["duration"] for entry in result]
+
+                elif (field == "playlist"):
+
+                    result = playlist_search(title, limit = 20).result()["result"]
+                    link = [entry["link"] for entry in result]
+                    label = [entry["title"] for entry in result]
+                    anchor = [entry["channel"]["name"] for entry in result]
+                    length = []
+
+                if (len(link) > 1): url = self.show_results(label, link, anchor, length)
+                if ((len(link) == 1) | (url == None)): url = self.link_selector(link, title, label, channel, anchor)
+                header = label[link.index(url)]
+                for character in self.restrictions: header = header.replace(character, "-")
+                links.append(url), fields.append(field), tags.append(tag), labels.append(header)
+                os.system("cls")
+                add = input("\nAre you adding more files to the download schedule?: \n\nA: yes \nB: no \n\n")
+                count += 1
+
+                while add not in self.options[0:4]:
+
+                    os.system("cls")
+                    add = input("\nInvalid entry, please select an available option: \n\nA: continue adding files to download list \nB: done adding files to download list \n\n")
+
+                if (add.lower().rstrip().lstrip() == "a"): add = "yes"
+                elif (add.lower().rstrip().lstrip() == "b"): add = "no"
+                if (add.lower().rstrip().lstrip() == "no"): done = True
+
             os.system("cls")
-            if (preference == True): channel = input("\nWhich channel will you be downloading your content from?: ")
-            if (channel == ""): channel = self.test_query(channel, 1)
-            os.system("cls")
-            if (self.category == "video"): title = input("\nPlease input a search request for the required video(s): ")
-            if (self.category == "audio"): title = input("\nPlease input a search request for the required file: ")
-            if (title == ""): title = self.test_query(title, 1)
-
-            if (field == "single"):
-
-                result = YoutubeSearch(title, max_results = 20).to_dict()
-                link = ["https://www.youtube.com" + entry["url_suffix"] for entry in result]
-                label = [entry["title"] for entry in result]
-                anchor = [entry["channel"] for entry in result]
-                length = [entry["duration"] for entry in result]
-
-            elif (field == "playlist"):
-
-                result = playlist_search(title, limit = 20).result()["result"]
-                link = [entry["link"] for entry in result]
-                label = [entry["title"] for entry in result]
-                anchor = [entry["channel"]["name"] for entry in result]
-                length = []
-
-            return tag, link, title, label, channel, anchor, length, field
+            return tags, links, fields, labels
 
         elif (self.category == "comic book"):
 
