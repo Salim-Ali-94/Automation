@@ -88,7 +88,7 @@ class Dalia(OrderFood):
 					
 			except Exception as error:
 
-				print(error)
+				pass
 
 		return request.lower()
 
