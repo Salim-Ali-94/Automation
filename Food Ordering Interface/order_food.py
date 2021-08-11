@@ -1045,9 +1045,10 @@ class OrderFood(Downloader):
 
 if __name__ == "__main__":
 
-    path = "C:\\chrome_driver\\chromedriver"
-    admin = "u14262208@tuks.co.za"
-    password = "mrdfoodpassword"
+    # sign up to Mr D Food and get a username and password
+    path = os.getcwd() + "\\chromedriver" # place the chromium driver in the same folder as this program
+    admin = "" # Mr D Food account email
+    password = "" # Mr D Food account password
     waiter =  OrderFood(path, admin, password)
     waiter.mrDFood()
     os.system("cls")
