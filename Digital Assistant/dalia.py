@@ -1304,7 +1304,7 @@ class Dalia(OrderFood):
 
 
 if __name__ == "__main__":
-  
+
 	# download qbit-torrent, configure server UI manager and setup a username & password
 	qbit_admin = "" # qbit-torrent server UI manager login name
 	qbit_password = "" # qbit-torrent server UI manager login password
@@ -1313,8 +1313,8 @@ if __name__ == "__main__":
 	owm_key = "" # sign up and get a free api key from the Open Weather Map website (user account required)
 	fixer_key = "" # sign up and get a free api key from the Fixer.IO (user account required)
 	alphaVantage_key = "" # sign up and get a free api key from the Alpha Vantage website (user account required)
-	mrDFood_admin = ""
-	mrDFood_password = ""
+	mrDFood_admin = "" # Mr D Food account email
+	mrDFood_password = "" # Mr D Food account password
 	sender = "" # one email address to send the list from
 	gmail_password = "" # password of the email used for the "sender" (above)
 	receiver = "" # another email address to receive the list
