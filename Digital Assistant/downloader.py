@@ -3107,17 +3107,3 @@ class Downloader(object):
 
             file.write(f"{self.driver.service.process.pid}")
             for child in children: file.write(f"\n{child.pid}")
-
-
-
-
-if __name__ == "__main__":
-    
-    user = "Salim"
-    password = "qbittorrentpassword"
-    path = os.getcwd() + "\\chromedriver"
-    downloader = Downloader(path, user, password)
-    downloader.search()
-    downloader.driver.quit()
-    os.system("cls")
-    print("\nDownload complete\n")
