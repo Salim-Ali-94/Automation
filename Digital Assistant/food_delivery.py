@@ -995,16 +995,3 @@ class OrderFood(Downloader):
             for index in range(end): array.pop(0)
 
         return matrix
-
-
-
-
-# if __name__ == "__main__":
-
-#     path = os.getcwd() + "\\chromedriver"
-#     admin = "u14262208@tuks.co.za"
-#     password = "mrdfoodpassword"
-#     waiter =  OrderFood(path, admin, password)
-#     waiter.mrDFood()
-#     os.system("cls")
-#     waiter.driver.quit()
