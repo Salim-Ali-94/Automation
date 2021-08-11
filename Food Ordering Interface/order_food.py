@@ -9,7 +9,7 @@ import psutil
 import textwrap
 
 
-class OrderFood(Downloader):
+class OrderFood(object):
 
     options = ["A", "a", "B", "b", "C", "c"]
     numbers = lambda self, start, end: [str(index) for index in range(start, end + 1)]
