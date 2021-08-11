@@ -822,7 +822,15 @@ class Downloader(object):
                     bits = os.path.getsize(folder + "\\" + current)
                     megabytes, minutes = bits / 1e6, duration / 60
                     ratio = megabytes / minutes
-                    if (ratio < 2.5): process.kill(), os.remove(file), subprocess.Popen(f"python crawler.py -i {site} -o {folder}", shell = True)
+                    
+                    if (ratio < 2.5): 
+                        
+                        process.kill()
+                        time.sleep(5)
+                        os.remove(file)
+                        process = subprocess.Popen(f"python crawler.py -i {site} -o {folder}", shell = True)
+                        time.sleep(20)
+                        
                     else: busy = False
 
             kb = KB
