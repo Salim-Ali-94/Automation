@@ -1363,6 +1363,8 @@ if __name__ == "__main__":
 
 			except KeyboardInterrupt:
 				
+				bye = random.choice(sleep_response)
+				agent.respond(bye)
 				counter = 0
 
 			enable = True
