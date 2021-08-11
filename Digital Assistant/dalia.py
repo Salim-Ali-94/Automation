@@ -85,25 +85,10 @@ class Dalia(OrderFood):
 
 					print(f"Corrected input speech to:", correct)
 					request = correct
-
-			except gSTT.UnknownValueError as error:
-
-				reply = "Sorry, I didn't get that"
-				error = str(error)
-				reply = reply + ". Exception: " + error
-				self.respond(reply)
-
-			except gSTT.RequestError:
-
-				reply = "Sorry, my speech service is down"
-				self.respond(reply)
-
+					
 			except Exception as error:
 
-				reply = "an unexpected error has occured"
-				error = str(error)
-				reply = reply + ". Exception: " + error
-				self.respond(reply)
+				print(error)
 
 		return request.lower()
 
