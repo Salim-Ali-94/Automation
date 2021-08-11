@@ -251,14 +251,14 @@ class Dalia(OrderFood):
 		if [phrase.lower() for phrase in audio_command if phrase.lower() in command]:
 
 			self.create_playlist()
-			self.play_music()
+			self.play_media()
 			condition = 1
 
 		if [phrase.lower() for phrase in control_audio if phrase.lower() in command]:
 
 			if (self.flag == True):
 
-				self.music_control(command)
+				self.media_control(command)
 				condition = 1
 
 		if [phrase.lower() for phrase in video_command[1] if phrase.lower() in command]:
@@ -883,7 +883,7 @@ class Dalia(OrderFood):
 
 		Name = self.root()
 		user = "\\".join(Name)
-		path = f"{user}\\Music"
+		path = f"{user}\\Media"
 		folder = os.listdir(path)
 		random.shuffle(folder)
 
@@ -894,7 +894,7 @@ class Dalia(OrderFood):
 				if item.endswith(".mp3"): file.write(f"file:///{path}\\{item}\n")
 
 
-	def play_music(self):
+	def play_media(self):
 
 		instance = vlc.Instance()
 		player = instance.media_player_new()
@@ -909,7 +909,7 @@ class Dalia(OrderFood):
 		self.flag = True
 
 
-	def music_control(self, command):
+	def media_control(self, command):
 
 		if [phrase.lower() for phrase in Next if phrase.lower() in command]:
 			self.VLC.next()
@@ -1041,7 +1041,6 @@ class Dalia(OrderFood):
 
 		video = self.links[position]
 		webbrowser.get().open(video)
-		# self.advert_handler(video)
 		reply = random.choice(play_response)
 		self.respond(reply)
 
@@ -1117,24 +1116,24 @@ class Dalia(OrderFood):
 		content = "div.caas-body p"
 		counter, collection, reports = 0, [], []
 		trash = ["More stories from",
-				 "[MUSIC",
-				 "Like this article",
-				 "Get more from",
-				 "Cover photo thumbnail",
-				 "Editor's note",
-				 "Photo:",
-				 "Featured Image via GoFundMe",
-				 "[NO AUDIO]",
-				 "More from Axios",
-				 "Subscribe for free",
-				 "Read the original article",
-				 "This article is republished",
-				 "It was written by",
-				 "receives funding from",
-				 "Originally Appeared on",
-				 "https://",
-				 "http://",
-				 "Sign up to get"]
+			 "[MUSIC",
+			 "Like this article",
+			 "Get more from",
+			 "Cover photo thumbnail",
+			 "Editor's note",
+			 "Photo:",
+			 "Featured Image via GoFundMe",
+			 "[NO AUDIO]",
+			 "More from Axios",
+			 "Subscribe for free",
+			 "Read the original article",
+			 "This article is republished",
+			 "It was written by",
+			 "receives funding from",
+			 "Originally Appeared on",
+			 "https://",
+			 "http://",
+			 "Sign up to get"]
 
 		first_check = trash.copy()
 		for item in ["https://", "http://", "Featured Image via GoFundMe"]: first_check.remove(item)
@@ -1306,19 +1305,20 @@ class Dalia(OrderFood):
 
 if __name__ == "__main__":
 
-	qbit_admin = "Salim"
-	qbit_password = "qbittorrentpassword"
-	city = "Polokwane"
-	country = "South Africa"
-	owm_key = "7022786074cb31b1dbf0e75ad9a704dc"
-	fixer_key = "41e3de43378c40dc91464de1bba5e2af"
-	alphaVantage_key = "2II3IEHY3N2BIDFC"
-	mrDFood_admin = "u14262208@tuks.co.za"
-	mrDFood_password = "mrdfoodpassword"
-	sender = "salim9x@gmail.com"
-	gmail_password = "googlepassword"
-	receiver = "u14262208@tuks.co.za"
-    path = os.getcwd() + "\\chromedriver"
+	# download and setup qbit-torrent UI manager and server
+	qbit_admin = ""
+	qbit_password = ""
+	city = "" # current residing city of the user
+	country = "" # current residing country of the user
+	owm_key = "" # sign up and get a free api key from the Open Weather Map website (user account required)
+	fixer_key = "" # sign up and get a free api key from the Fixer.IO (user account required)
+	alphaVantage_key = "" # sign up and get a free api key from the Alpha Vantage website (user account required)
+	mrDFood_admin = ""
+	mrDFood_password = ""
+	sender = "" # one email address to send the list from
+	gmail_password = "" # password of the email used for the "sender" (above)
+	receiver = "" # another email address to receive the list
+	path = os.getcwd() + "\\chromedriver" # keep the chromium driver in the same folder as this program
 	enable, counter, condition = True, -1, 0
 	agent = Dalia(country, city, owm_key, sender, receiver, gmail_password, path, qbit_admin, qbit_password, mrDFood_admin, mrDFood_password, alphaVantage_key, fixer_key)
 	kb.add_hotkey("end", lambda: kb.press_and_release("ctrl+c"))
@@ -1371,10 +1371,3 @@ if __name__ == "__main__":
 
 		try: agent.driver.quit()
 		except: pass
-
-
-	# city = "" # current residing city of the user
-	# key = "" # sign up and get a free api key from the Open Weather Map website (user account required)
-	# sender = "" # one email address to send the list from
-	# password = "" # password of the email used for the "sender" (above) 
-	# receiver = "" # another email address to receive the list
