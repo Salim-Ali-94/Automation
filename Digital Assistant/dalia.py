@@ -1304,10 +1304,10 @@ class Dalia(OrderFood):
 
 
 if __name__ == "__main__":
-
-	# download and setup qbit-torrent UI manager and server
-	qbit_admin = ""
-	qbit_password = ""
+  
+	# download qbit-torrent, configure server UI manager and setup a username & password
+	qbit_admin = "" # qbit-torrent server UI manager login name
+	qbit_password = "" # qbit-torrent server UI manager login password
 	city = "" # current residing city of the user
 	country = "" # current residing country of the user
 	owm_key = "" # sign up and get a free api key from the Open Weather Map website (user account required)
@@ -1318,7 +1318,7 @@ if __name__ == "__main__":
 	sender = "" # one email address to send the list from
 	gmail_password = "" # password of the email used for the "sender" (above)
 	receiver = "" # another email address to receive the list
-	path = os.getcwd() + "\\chromedriver" # keep the chromium driver in the same folder as this program
+	path = os.getcwd() + "\\chromedriver" # keep the chromium executable in the same folder as this program
 	enable, counter, condition = True, -1, 0
 	agent = Dalia(country, city, owm_key, sender, receiver, gmail_password, path, qbit_admin, qbit_password, mrDFood_admin, mrDFood_password, alphaVantage_key, fixer_key)
 	kb.add_hotkey("end", lambda: kb.press_and_release("ctrl+c"))
