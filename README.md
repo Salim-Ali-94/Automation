@@ -19,4 +19,4 @@ For the comic book download capabilities, a version of chrome webdriver matching
 
 The torrent download feature makes use of the magnet-scraping api from this github project; https://github.com/SameerBidi/Torrent-Scraping in combination with the qbit-torrent server which can be setup (username and password for the UI manager) by following this tutorial; https://www.thepythoncode.com/article/download-torrent-files-in-python
 
-The animated series are downloaded using the application developd in this github project; https://github.com/EpicUnknown/wco-dl
+The animated series are downloaded using the application developed in this github project; https://github.com/EpicUnknown/wco-dl
