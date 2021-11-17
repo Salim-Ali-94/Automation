@@ -3166,3 +3166,18 @@ class Downloader(object):
 
             file.write(f"{self.driver.service.process.pid}")
             for child in children: file.write(f"\n{child.pid}")
+                
+                
+                
+                
+if __name__ == "__main__":
+    
+    # download qbit-torrent, configure server UI manager and setup a username & password
+    user = "" # qbit-torrent server UI manager login name
+    password = "" # qbit-torrent server UI manager login password
+    path = os.getcwd() + "\\chromedriver" # keep the chromium executable in the same folder as this program
+    downloader = Downloader(path, user, password)
+    downloader.search()
+    downloader.driver.quit()
+    os.system("cls")
+    print("\nDownload complete\n")
