@@ -32,7 +32,7 @@ from wco_dl.Settings import Settings
 
 class Downloader(object):
     
-    options = ["A", "a", "B", "b", "C", "c", "D", "d", "E", "e"]
+    options = ["A", "a", "B", "b", "C", "c", "D", "d", "E", "e", "F", "f"]
     extensions = (".mp4", ".mkv", ".wav", ".avi", ".flv", ".mov", ".wmv", ".webm")
     standard = r"[^a-zA-Z0-9\s:]"
     restrictions = ["?", "/", "\\", ":", "*", ">", "<", "|", '"']
@@ -46,11 +46,12 @@ class Downloader(object):
         for index in range(10, 100 + 1): self.seasons.append(f"s{index}")
         for item in self.seasons: self.episodes += [item + f"e0{index}" for index in range(1, 9 + 1)]
         for item in self.seasons: self.episodes += [item + f"e{index}" for index in range(10, 100 + 1)]
+        self.root_directory = browser_path
         self.qbit_admin = qbit_admin
         self.qbit_password = qbit_password
-        self.directory = browser_path
         self.reset_browser()
         self.mode = mode
+        self.category = ""
 
 
     def reset_browser(self, status = True):
@@ -62,12 +63,12 @@ class Downloader(object):
 
         try: 
 
-            self.driver = webdriver.Chrome(executable_path = self.directory, options = settings)
+            self.driver = webdriver.Chrome(executable_path = self.root_directory + "\\chromedriver", options = settings)
 
         except:
 
             settings.add_argument("--remote-debugging-port=9222")
-            self.driver = webdriver.Chrome(executable_path = self.directory, options = settings)
+            self.driver = webdriver.Chrome(executable_path = self.root_directory + "\\chromedriver", options = settings)
 
         self.driver.implicitly_wait(5)
         self.kill_chrome()
@@ -78,18 +79,21 @@ class Downloader(object):
         if (indicator == None):
 
             os.system("cls")
-            category = input("\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \nD: torrent \nE: animated show \n\n")
+            if (self.category == "files"): category = input("\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \nD: torrent \nE: animated show \n\n")
+            else: category = input("\nWhat type of content are you downloading: \n\nA: audio \nB: video \nC: comic book \nD: torrent \nE: animated show \nF: multiple files \n\n")
 
             while category.lower().rstrip().lstrip() not in self.options:
 
                 os.system("cls")
-                category = input("\nInvalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \nD: torrent \nE: animated show \n\n")
+                if (self.category == "files"): category = input("\nInvalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \nD: torrent \nE: animated show \n\n")
+                else: category = input("\nInvalid entry, please select an available file type: \n\nA: audio \nB: video \nC: comic book \nD: torrent \nE: animated show \nF: multiple files \n\n")
 
             if (category.lower().rstrip().lstrip() == "a"): self.category = "audio"
             elif (category.lower().rstrip().lstrip() == "b"): self.category = "video"
             elif (category.lower().rstrip().lstrip() == "c"): self.category = "comic book"
             elif (category.lower().rstrip().lstrip() == "d"): self.category = "torrent"
             elif (category.lower().rstrip().lstrip() == "e"): self.category = "animation"
+            elif ((category.lower().rstrip().lstrip() == "f") & (self.category != "files")): self.category = "files"
 
         elif ((self.category == "video") | (self.category == "audio")):
 
@@ -169,7 +173,7 @@ class Downloader(object):
                         pass
 
                     try: self.directory_manager(tag[index], file_name + ".mp3")
-                    except: self.directory_manager(tag[index], self.slugify(file_name) + ".mp3")
+                    except Exception as e: print(e), self.directory_manager(tag[index], self.slugify(file_name) + ".mp3")
 
                 elif (field[index] == "playlist"):
 
@@ -233,7 +237,8 @@ class Downloader(object):
 
                 if (fields[index] == "single"):
 
-                    print(f"\nCurrently downloading {titles} ({index + 1} / {len(issues)}) \n\n")
+                    if (len(issues) > 1): print(f"\nCurrently downloading {titles} ({index + 1} / {len(issues)}) \n\n")
+                    else: print(f"\nCurrently downloading {titles} ({index + 1} / {len(issues)}) \n\n")
                     self.persist_search(links)
                     for character in self.restrictions: titles = titles.replace(character, "-")
                     self.process_file(titles)
@@ -280,8 +285,8 @@ class Downloader(object):
 
                     if (field[index] == "episode"):
 
-                        code = title[index].lower().split()[-1]
-                        search_link = "?search_key=" + title[index] + "&site="
+                        code = title[index].replace("'", "").lower().split()[-1]
+                        search_link = "?search_key=" + title[index].replace("'", "") + "&site="
                         results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
                         pages = [result[1] for result in results]
                         for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
@@ -291,7 +296,7 @@ class Downloader(object):
                         leechers = [result["leeches"] for result in data]
                         sizes = [result["size"] for result in data]
                         links = [result["link"] for result in data]
-                        torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, code)
+                        torrent = self.torrent_selector(title[index].replace("'", ""), links, titles, seeders, leechers, sizes, sites, code)
                         if (torrent == "empty"): pass
                         else: qbt.download_from_link(torrent, savepath = folder)
 
@@ -300,12 +305,12 @@ class Downloader(object):
                         while not done:
 
                             torrent = ""
-                            code = title[index].lower().split()[-1]
-                            search_link = "?search_key=" + title[index] + " complete" + "&site="
+                            code = title[index].replace("'", "").lower().split()[-1]
+                            search_link = "?search_key=" + title[index].replace("'", "") + " complete" + "&site="
                             if (torrent != "empty"): results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
                             data, sites = [], []
                             complete, skip = False, False
-                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index], folder, websites, counter, 0, code)
+                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index].replace("'", ""), folder, websites, counter, 0, code)
 
                             if ((len(results) == 0) | (count != 1) | (int(final[index]) != 0)):
 
@@ -314,10 +319,10 @@ class Downloader(object):
                                     if ((int(final[index]) != 0) & (count == int(final[index]) + 1)): complete, done = True, True
                                     if ((int(final[index]) != 0) & (count == int(final[index]) + 1)): break
                                     prefix = "0" if (count < 10) else ""
-                                    search_link = "?search_key=" + title[index] + "E" + prefix + str(count) + "&site="
+                                    search_link = "?search_key=" + title[index].replace("'", "") + "E" + prefix + str(count) + "&site="
                                     results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
                                     files = os.listdir(folder)
-                                    number = title[index][-3:] + "E" + prefix + str(count)
+                                    number = title[index].replace("'", "")[-3:] + "E" + prefix + str(count)
                                     count += 1
 
                                     for file in files:
@@ -340,7 +345,7 @@ class Downloader(object):
                                             leechers = [result["leeches"] for result in data]
                                             sizes = [result["size"] for result in data]
                                             links = [result["link"] for result in data]
-                                            torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, number)
+                                            torrent = self.torrent_selector(title[index].replace("'", ""), links, titles, seeders, leechers, sizes, sites, number)
                                             if (torrent == "empty"): complete, done = True, True
                                             else: qbt.download_from_link(torrent, savepath = folder)
                                             data, sites = [], []
@@ -375,8 +380,8 @@ class Downloader(object):
                                 leechers = [result["leeches"] for result in data]
                                 sizes = [result["size"] for result in data]
                                 links = [result["link"] for result in data]
-                                torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, code)
-                                if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], folder, websites, counter, 0, code)
+                                torrent = self.torrent_selector(title[index].replace("'", ""), links, titles, seeders, leechers, sizes, sites, code)
+                                if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index].replace("'", ""), folder, websites, counter, 0, code)
                                 if (torrent == "empty"): done, results = False, []
                                 else: qbt.download_from_link(torrent, savepath = folder)
 
@@ -387,7 +392,7 @@ class Downloader(object):
                             torrent = ""
                             if ((int(final[index]) != 0) & (counter == int(final[index]) + 1)): break
                             season = "0" if (counter < 10) else ""
-                            search_link = "?search_key=" + title[index] + " S" + season + str(counter) + " complete" + "&site="
+                            search_link = "?search_key=" + title[index].replace("'", "") + " S" + season + str(counter) + " complete" + "&site="
                             if (torrent != "empty"): results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
                             ID = f"Season {counter}"
                             subfolder = folder + f"\\{ID}"
@@ -395,7 +400,7 @@ class Downloader(object):
                             complete, skip, count = False, False, 1
                             code = "s" + season + str(counter)
                             data, sites = [], []
-                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index], subfolder, websites, counter, 1, code)
+                            if (len(results) == 0): torrent, results = self.alternative(qbt, title[index].replace("'", ""), subfolder, websites, counter, 1, code)
                             if ((torrent != "empty") & (torrent != "")): counter += 1
 
                             if (len(results) == 0):
@@ -403,7 +408,7 @@ class Downloader(object):
                                 while not complete:
 
                                     episode = "0" if (count < 10) else ""
-                                    search_link = "?search_key=" + title[index] + " S" + season + str(counter) + "E" + episode + str(count) + "&site="
+                                    search_link = "?search_key=" + title[index].replace("'", "") + " S" + season + str(counter) + "E" + episode + str(count) + "&site="
                                     results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
                                     files = os.listdir(subfolder)
                                     number = "S" + season + str(counter) + "E" + episode + str(count)
@@ -427,7 +432,7 @@ class Downloader(object):
                                             leechers = [result["leeches"] for result in data]
                                             sizes = [result["size"] for result in data]
                                             links = [result["link"] for result in data]
-                                            torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, number)
+                                            torrent = self.torrent_selector(title[index].replace("'", ""), links, titles, seeders, leechers, sizes, sites, number)
                                             if (torrent == "empty"): complete, done, torrent = True, False, ""
                                             else: qbt.download_from_link(torrent, savepath = folder)
                                             data, sites = [], []
@@ -469,7 +474,7 @@ class Downloader(object):
                                 leechers = [result["leeches"] for result in data]
                                 sizes = [result["size"] for result in data]
                                 links = [result["link"] for result in data]
-                                torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites, code)
+                                torrent = self.torrent_selector(title[index].replace("'", ""), links, titles, seeders, leechers, sizes, sites, code)
                                 if (torrent == "empty"): torrent, results = self.alternative(qbt, title[index], subfolder, websites, counter, 1, code)
                                 if (torrent == "empty"): done, results = False, []
                                 else: qbt.download_from_link(torrent, savepath = subfolder)
@@ -481,7 +486,7 @@ class Downloader(object):
 
                     data, sites, torrent = [], [], ""
                     folder = self.directory_manager(tag, title = title[index])
-                    search_link = "?search_key=" + title[index] + "&site="
+                    search_link = "?search_key=" + title[index].replace("'", "") + "&site="
                     results = [(requests.get(url + getTorrents + search_link + site).json()["torrents"], site) for site in websites if (len(requests.get(url + getTorrents + search_link + site).json()["torrents"]) != 0)]
                     pages = [result[1] for result in results]
                     for result in range(len(results)): sites += [pages[result] for address in range(len(results[result][0]))]
@@ -491,7 +496,7 @@ class Downloader(object):
                     leechers = [result["leeches"] for result in data]
                     sizes = [result["size"] for result in data]
                     links = [result["link"] for result in data]
-                    torrent = self.torrent_selector(title[index], links, titles, seeders, leechers, sizes, sites)
+                    torrent = self.torrent_selector(title[index].replace("'", ""), links, titles, seeders, leechers, sizes, sites)
                     if (torrent == "empty"): pass
                     else: qbt.download_from_link(torrent, savepath = folder)
 
@@ -502,7 +507,7 @@ class Downloader(object):
             if (self.mode == 0): title, link, chapter, tag = self.extractor()
             else: title, link, chapter, tag = self.extractor(field = field, tag = tag, title = title, initial = initial, final = final)
             root = os.getcwd()
-            os.chdir("wco_dl"), print()
+            os.chdir(self.root_directory + "\\wco_dl"), print()
 
             for index in range(len(title)):
 
@@ -517,7 +522,7 @@ class Downloader(object):
                     for item in range(len(link[index][element])):
 
                         if (self.mode == 0): os.system("cls")
-                        if ((len(title) == 1) & (len(link[index][element]) == 1) & (self.mode == 0)): print(f"\nCurrently downloading '{chapter[index][element][item]}' from {title[index][0]} \n\n")
+                        if ((len(title) == 1) & (len(link[index][element]) == 1) & (self.mode == 0)): print(f"\nCurrently downloading {chapter[index][element][item]} \n\n")
                         elif ((len(title) == 1) & (self.mode == 0)): print(f"\nCurrently downloading '{chapter[index][element][item]}' from {title[index][0]} ({item + 1} / {len(link[index][element])}) \n\n")
                         elif (self.mode == 0): print(f"\nCurrently downloading '{chapter[index][element][item]}' from {title[index][0]} [{item + 1} / {len(link[index][element])} ({index + 1} / {len(title)})] \n\n")
                         settings = Settings()
@@ -539,7 +544,7 @@ class Downloader(object):
                         else: append = ""
                         check = "s" + append + str(int(season))
                         ticket = self.check_page(folders[element])
-                        if ((check in self.seasons) & (ticket in ["A", "B"])): folder = folders[element] + "\\" + folders[element].split("\\")[-1].replace(" ", "_") + f"_{check.replace(append, '').title()}"
+                        if ((check in self.seasons) & (ticket in ["A", "B"])): folder = folders[element] + "\\" + folders[element].split("\\")[-1].replace(" ", "_") + f"_{self.apostrophe(check.replace(append, '').title())}"
                         else: folder = folders[element]
                         if (os.path.isdir(folder) == False): os.makedirs(folder)
                         subfolders = ["\\".join(folder.split("\\")[0:-1]) + "\\" + folder.split("\\")[-1].replace("_", " ").replace(" anime", ""), folder.replace("_", " ").replace(" anime", "")]
@@ -570,7 +575,27 @@ class Downloader(object):
 
             os.chdir(root)
 
+        elif (self.category == "files"):
 
+            done = False
+
+            while not done:
+
+                self.search()
+                os.system("cls")
+                add = input("\nAre you downloading anymore files?: \n\nA: yes \nB: no \n\n")
+                self.category = "files"
+
+                while add not in self.options[0:4]:
+
+                    os.system("cls")
+                    add = input("\nInvalid entry, please select an available option: \n\nA: continue to download additional files \nB: done downloading all required files \n\n")
+
+                if (add.lower().rstrip().lstrip() == "a"): add = "yes"
+                elif (add.lower().rstrip().lstrip() == "b"): add = "no"
+                if (add.lower().rstrip().lstrip() == "no"): done = True
+
+                    
     def file_manager(self, folder, indicator):
 
         for reference, path, items in os.walk(folder):
@@ -628,6 +653,7 @@ class Downloader(object):
 
         process = subprocess.Popen(f"python crawler.py -i {link} -o {folder}", shell = True)
         self.monitor_download(link, folder, process, title)
+        os.chdir(self.root_directory + "\\wco_dl")
         os.rename(folder + "\\" + title, folder + "\\" + tag)
 
 
@@ -797,24 +823,24 @@ class Downloader(object):
 
     def monitor_download(self, site, folder, process, file):
 
-        ratio = 3
         before = os.listdir(folder)
         busy, kb, previous = True, 0, ""
         current, KB, after = previous, kb, before.copy()
-        time.sleep(10)
-        if (len(os.listdir(folder)) != 0): current = os.listdir(folder)[-1]
+        ratio = 3
 
         while busy:
 
-            time.sleep(20)
+            if (self.mode == 1): enable, condition = self.task(self.record())
             after = os.listdir(folder)
             for item in after: current = item if item not in before else current
 
             if (len(after) == 0):
 
+                if (self.mode == 1): print("Currently checking folder for new files, please wait....\n")
                 time.sleep(30)
                 after = os.listdir(folder)
                 for item in after: current = item if item not in before else current
+                if (self.mode == 1): print("\nListening again, you may now continue to request instructions....\n")
 
                 if (len(after) == 0):
 
@@ -827,22 +853,30 @@ class Downloader(object):
 
                 if ((KB == kb) & (current == previous)):
 
-                    duration = self.video_duration(folder + "\\" + current)
-                    bits = os.path.getsize(folder + "\\" + current)
-                    megabytes, minutes = bits / 1e6, duration / 60
-                    ratio = megabytes / minutes
+                    time.sleep(20)
+                    KB = os.path.getsize(folder + "\\" + current)
 
-                    if (ratio < 2.5):
+                    if ((KB == kb) & (current == previous)):
 
-                        process.kill()
-                        time.sleep(5)
-                        os.remove(folder + "\\" + file)
-                        process = subprocess.Popen(f"python crawler.py -i {site} -o {folder}", shell = True)
-                        time.sleep(20)
+                        duration = self.video_duration(folder + "\\" + current)
+                        bits = os.path.getsize(folder + "\\" + current)
+                        megabytes, minutes = bits / 1e6, duration / 60
+                        ratio = megabytes / minutes
 
-                    else:
+                        if (ratio < 2.5):
 
-                        busy = False
+                            if (self.mode == 1): print("File download is hanging, restarting now, please wait....")
+                            os.chdir(folder)
+                            process.kill(), time.sleep(5)
+                            os.remove(folder + "\\" + file)
+                            os.chdir(self.root_directory + "\\wco_dl")
+                            process = subprocess.Popen(f"python crawler.py -i {site} -o {folder}", shell = True)
+                            time.sleep(20)
+                            if (self.mode == 1): print("Listening again, you may now continue to request instructions....")
+
+                        else:
+
+                            busy = False
 
             kb = KB
             previous = current
@@ -878,6 +912,15 @@ class Downloader(object):
         search.send_keys(title)
         search.send_keys(Keys.ENTER)
         response = self.driver.find_elements_by_css_selector(".aramadabaslik a")
+
+        if ((len(response) == 0) & ("'" in title)):
+
+            self.persist_search(url)
+            search = self.driver.find_element_by_id("searchbox")
+            search.send_keys(title.replace("'", ""))
+            search.send_keys(Keys.ENTER)
+            response = self.driver.find_elements_by_css_selector(".aramadabaslik a")
+
         titles = [item.text for item in response]
         links = [item.get_attribute("href") for item in response]
         family = self.driver.find_elements_by_css_selector(".cerceve-tur-ve-genre")
@@ -928,7 +971,7 @@ class Downloader(object):
 
             if (field != "playlist"): os.makedirs("Video") if (os.path.isdir("Video") == False) else None
             else: os.makedirs("Audio") if (os.path.isdir("Audio") == False) else None
-            directory = f"{user}\\Documents\\{self.category.title()}"
+            directory = f"{user}\\Documents\\{self.apostrophe(self.category.title())}"
             os.chdir(directory)
             if (os.path.isdir(tag) == False): os.makedirs(tag)
             folder = f"{directory}\\{tag}"
@@ -953,7 +996,7 @@ class Downloader(object):
 
                 if (os.path.isdir("TORRENTS") == False): os.makedirs("TORRENTS")
                 directory = f"{user}\\Documents\\TORRENTS"
-                tag, title = tag.title(), title.title()
+                tag, title = self.apostrophe(tag.title()), self.apostrophe(title.title())
 
             elif (self.category == "animation"):
 
@@ -968,6 +1011,21 @@ class Downloader(object):
             destination = f"{folder}\\{title}"
             os.chdir(current_directory)
             return destination
+
+
+    def apostrophe(self, title):
+
+        if "'" in title:
+
+            characters = title.split()
+            title = ""
+
+            for character in characters:
+
+                if "'" in character: title += character.split("'")[0] + "'" + character.split("'")[-1].lower() + " "
+                else: title += character + " "
+
+        return title.rstrip().lstrip()
 
 
     def delete_copy(self, current_directory, directory = "", field = ""):
@@ -1077,7 +1135,7 @@ class Downloader(object):
         if ((self.category == "video") | (self.category == "audio")):
 
             count, done = 1, False
-            channel = None
+            channel, url = None, None
             links, titles, duration, fields = [], [], [], []
             channels, anchors, labels, tags = [], [], [], []
 
@@ -1405,6 +1463,7 @@ class Downloader(object):
                     if (count == 1): show = input(f"\nPlease input a particular title for the show that you are searching for: ")
                     else: show = input(f"\nPlease specify a title for the {self.ordinal(count)} show that you are searching for: ")
                     if (show == ""): show = self.test_query(show, 1)
+                    ID = show.lower().rstrip().lstrip()
                     text = show.lower().rstrip().lstrip()
                     labels, anchors = self.anime_search(show)
                     proceed = True
@@ -1453,7 +1512,7 @@ class Downloader(object):
                                     os.system("cls")
                                     print(f"\nInvalid entry, the last season must be a value larger than the first season and within the given range (1 - {len(anchors)}): \n")
                                     for counter in range(len(anchors)): print(f"{counter + 1}. {labels[counter]}")
-                                    start = input(f"\nChoose which season to start downloading {text.title()} from (1 - {len(anchors)}): ")
+                                    start = input(f"\nChoose which season to start downloading {self.apostrophe(text.title())} from (1 - {len(anchors)}): ")
 
                                     while start.lower().rstrip().lstrip() not in self.numbers(1, len(anchors)):
 
