@@ -29,7 +29,7 @@ def saveProgress(browser, shop):
 	browser.execute_script("arguments[0].click();", options)
 	browser, stats = getStats(browser)
 	print("\nCheckpoint saved with the following stats:\n")
-	for stat in stats: print(f"{stat}: {stats[stat]}")
+	for stat in stats: print(f"\t{stat}: {stats[stat]}")
 	print()
 	return browser
 
@@ -56,7 +56,7 @@ def loadCheckpoint(browser, shop, opened = True):
 	browser.execute_script("arguments[0].click();", options)
 	browser, stats = getStats(browser)
 	print(f"\nLoaded latest checkpoint for {shop} with the following stats:\n")
-	for stat in stats: print(f"{stat}: {stats[stat]}")
+	for stat in stats: print(f"\t{stat}: {stats[stat]}")
 	print()
 	return browser
 
