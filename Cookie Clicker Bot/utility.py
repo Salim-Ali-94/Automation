@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 import os, random
 
 
@@ -15,49 +16,76 @@ def initializeDriver(state = False):
 	driver = webdriver.Chrome(executable_path = "chromedriver", options = settings)
 	return driver
 
-def saveProgress(browser, shop):
+def saveProgress(browser, shop, info = True):
 
+	root = os.getcwd()
+	if (os.path.isdir("Save Files") == False): os.makedirs("Save Files")
+	os.chdir("Save Files")
 	options = browser.find_element_by_id("prefsButton")
 	browser.execute_script("arguments[0].click();", options)
 	export = browser.find_element_by_link_text("Export save")
 	browser.execute_script("arguments[0].click();", export)
 	tag = browser.find_element_by_id("textareaPrompt")
-	with open(f"CC_{shop}_save_file.txt", "w") as file: file.write(f"{tag.text}")
+	with open(f"CC_{'_'.join(shop.split())}_save_file.txt", "w") as file: file.write(f"{tag.text}")
 	done = browser.find_element_by_id("promptOption0")
 	browser.execute_script("arguments[0].click();", done)
 	options = browser.find_element_by_id("prefsButton")
 	browser.execute_script("arguments[0].click();", options)
 	browser, stats = getStats(browser)
-	print("\nCheckpoint saved with the following stats:\n")
-	for stat in stats: print(f"\t{stat}: {stats[stat]}")
+
+	if (info == True):
+
+		print("\nCheckpoint saved with the following stats:\n")
+		for stat in stats: print(f"\t{stat}: {stats[stat]}")
+
 	print()
+	os.chdir(root)
 	return browser
 
 def loadCheckpoint(browser, shop, opened = True):
 
-	with open(f"CC_{shop}_save_file.txt", "r") as file: previous = file.readlines()
-	options = browser.find_element_by_id("prefsButton")
-	browser.execute_script("arguments[0].click();", options)
-	WebDriverWait(browser, timeout = 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "a.option.smallFancyButton")))
-	load = browser.find_element_by_link_text("Import save")
-	browser.execute_script("arguments[0].click();", load)
-	save_file = browser.find_element_by_id("textareaPrompt")
-	save_file.send_keys(previous[0].rstrip().lstrip())
-	done = browser.find_element_by_id("promptOption0")
-	browser.execute_script("arguments[0].click();", done)
+	root = os.getcwd()
 
-	if not opened:
+	if (os.path.isdir("Save Files") == True):
 
-		volume = browser.find_element_by_id("volumeSlider")
-		browser.execute_script("arguments[0].setAttribute('value', 0)", volume)
-		browser.execute_script("arguments[0].dispatchEvent(new Event('change'))", volume)
+		os.chdir("Save Files")
 
-	options = browser.find_element_by_id("prefsButton")
-	browser.execute_script("arguments[0].click();", options)
-	browser, stats = getStats(browser)
-	print(f"\nLoaded latest checkpoint for {shop} with the following stats:\n")
-	for stat in stats: print(f"\t{stat}: {stats[stat]}")
-	print()
+		if f"CC_{'_'.join(shop.split())}_save_file.txt" in os.listdir(os.getcwd()):
+
+			with open(f"CC_{'_'.join(shop.split())}_save_file.txt", "r") as file: previous = file.readlines()
+			options = browser.find_element_by_id("prefsButton")
+			browser.execute_script("arguments[0].click();", options)
+			WebDriverWait(browser, timeout = 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "a.option.smallFancyButton")))
+			load = browser.find_element_by_link_text("Import save")
+			browser.execute_script("arguments[0].click();", load)
+			save_file = browser.find_element_by_id("textareaPrompt")
+			save_file.send_keys(previous[0].rstrip().lstrip())
+			done = browser.find_element_by_id("promptOption0")
+			browser.execute_script("arguments[0].click();", done)
+
+			if not opened:
+
+				volume = browser.find_element_by_id("volumeSlider")
+				browser.execute_script("arguments[0].setAttribute('value', 0)", volume)
+				browser.execute_script("arguments[0].dispatchEvent(new Event('change'))", volume)
+
+			options = browser.find_element_by_id("prefsButton")
+			browser.execute_script("arguments[0].click();", options)
+			browser, stats = getStats(browser)
+			print(f"\nLoaded latest checkpoint for {shop} with the following stats:\n")
+			for stat in stats: print(f"\t{stat}: {stats[stat]}")
+			print()
+
+		else:
+		
+			print(f"NO SAVE FILE FOUND FOR BAKERY '{shop}'")
+
+		os.chdir(root)
+
+	else:
+	
+		print(f"NO SAVE FILE FOUND FOR BAKERY '{shop}'")
+
 	return browser
 
 def getStats(browser):
@@ -83,29 +111,37 @@ def getStats(browser):
 	browser.execute_script("arguments[0].click();", stats)
 	return browser, record
 
-def nameBakery(browser, shop):
+def nameBakery(browser, shop, replace = False):
 
 	counter = 0
+	root = os.getcwd()
+	if (os.path.isdir("Save Files") == False): os.makedirs("Save Files")
+	os.chdir("Save Files")
 	WebDriverWait(browser, timeout = 30).until(EC.visibility_of_element_located((By.ID, "bakeryName")))
 
 	if (shop == ""):
 
 		shop = browser.find_element_by_id("bakeryName").text
-		placeholder = shop
 
-		while f"CC_{shop}_save_file.txt" in os.listdir(os.getcwd()):
+		if (replace == False):
 
-			shop = placeholder + str(counter)
-			counter += 1
+			placeholder = shop
 
-	elif (shop != ""):
+			while f"CC_{'_'.join(shop.split())}_save_file.txt" in os.listdir(os.getcwd()):
 
-		placeholder = shop
+				shop = placeholder + str(counter)
+				counter += 1
 
-		while f"CC_{shop}_save_file.txt" in os.listdir(os.getcwd()):
+	else:
 
-			shop = placeholder + str(counter)
-			counter += 1
+		if (replace == False):
+
+			placeholder = shop
+
+			while f"CC_{'_'.join(shop.split())}_save_file.txt" in os.listdir(os.getcwd()):
+
+				shop = placeholder + str(counter)
+				counter += 1
 
 		name = browser.find_element_by_id("bakeryName")
 		browser.execute_script("arguments[0].click();", name)
@@ -115,36 +151,57 @@ def nameBakery(browser, shop):
 		confirm = browser.find_element_by_id("promptOption0")
 		browser.execute_script("arguments[0].click();", confirm)
 
+	os.chdir(root)
 	return browser, shop
 
 def purchaseItem(browser, inventory, strategy, category):
 
 	if ((strategy == "a") or (strategy == "b")):
 
-		items = [int(item.text.split()[-1].replace(",", "")) for item in inventory]
-		index = items.index(max(items) if (strategy == "a") else min(items))
-		buy = inventory[index]
+		if (category == "item"):
 
-		if (category == "upgrade"):
+			items = [int(item.text.split()[-1].replace(",", "")) for item in inventory]
+			index = items.index(max(items) if (strategy == "a") else min(items))
+			buy = inventory[index]
 
-			actions = ActionChains(browser)
-			actions.move_to_element(buy).perform()
-			WebDriverWait(browser, timeout = 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "div#tooltip div.name")))
-			selection = browser.find_element_by_css_selector("div#tooltip div.name")
+		else:
+
+			highest, lowest = 0, float("inf")
+
+			for element in inventory:
+
+				actions = ActionChains(browser)
+				actions.move_to_element(element).perform()
+				WebDriverWait(browser, timeout = 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "div#tooltip div.name")))
+				tool = ' '.join(browser.find_element_by_css_selector("div#tooltip div.name").text.split())
+				price = browser.find_element_by_css_selector("div#tooltip span.price").text.replace(",", "")
+
+				if ((strategy == "a") and (int(price) > highest)):
+
+					buy = element
+					highest = int(price)
+					selection = tool
+					break
+
+				elif ((strategy == "b") and (int(price) < lowest)):
+
+					buy = element
+					lowest = int(price)
+					selection = tool
+					break
 
 		if (category == "item"): buy_text = buy.text.split()[0:-2 if (len(buy.text.split()) >= 3) else -1]
-		else: buy_text = selection.text.split()
+		else: buy_text = selection.split()
 		browser.execute_script("arguments[0].click();", buy)
+		print(f"You bought the {' '.join(buy_text)} {category}")
 
 		if (category == "item"):
 
 			upgrades = browser.find_elements_by_css_selector(".crate.upgrade.enabled")
-			print(f"You bought the {' '.join(buy_text)} {category}")
 			return browser, upgrades
 
 		elif (category == "upgrade"):
 
-			print(f"You bought the {' '.join(buy_text)} {category}")
 			return browser
 
 	elif (strategy == "c"):
