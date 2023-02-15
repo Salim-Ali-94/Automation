@@ -6,33 +6,123 @@ import time
 import os
 import random
 import keyboard
-from utility import *
+from helping import *
 from constants import *
 
 
 def botManager():
 
 	opened = True
+	replace = "no"
 	golden_cookie = []
 	minimum, delay = None, None
 	os.system("cls"), print()
 	backup = input("Do you want to load a previous save file? (y / n): ")
 
-	while backup.lower().rstrip().lstrip() not in ["y", "n"]:
+	while backup.lower().rstrip().lstrip() not in ["y", "yes", "n", "no"]:
 
 		os.system("cls"), print()
 		backup = input("Do you want to load a previous save file? (y / n): ")
 
+	if backup.lower().rstrip().lstrip() in ["y", "yes"]:
 
-	if (backup.lower().rstrip().lstrip() == "y"): 
+		if (os.path.isdir("Save Files") == True):
 
-		os.system("cls"), print()
-		bakery = input("Please specify the profile name for the specific save file (case sensitive): ")
+			found = False
+			root = os.getcwd()
+			os.chdir("Save Files")
 
-	else: 
+			while not found:
 
-		os.system("cls"), print()
-		bakery = input("Name your bakery (leave blank to randomize): ")
+				os.system("cls"), print()
+				bakery = input("Please specify the profile name for the specific save file (case sensitive): ")
+
+				if f"CC_{'_'.join(bakery.split())}_save_file.txt" in os.listdir(os.getcwd()):
+
+					found = True
+					break
+
+				else:
+
+					os.system("cls"), print()
+					again = input(f"No save file found for bakery '{bakery}', try searching for another save file? (y / n): ")
+
+					while again.lower().rstrip().lstrip() not in ["y", "yes", "n", "no"]:
+
+						os.system("cls"), print()
+						again = input("Try searching for another save file? (y / n): ")
+
+					if again.lower().lstrip().rstrip() in ["n", "no"]:
+
+						backup = "no"
+						# bakery = ""
+						break
+
+			os.chdir(root)
+
+		else:
+
+			os.system("cls"), print()
+			print("NO SAVE FILES EXIST")
+			time.sleep(10)
+			backup = "no"
+
+	# else:
+	if backup.lower().rstrip().lstrip() in ["n", "no"]:
+
+		if (os.path.isdir("Save Files") == True):
+
+			exist = True
+			root = os.getcwd()
+			os.chdir("Save Files")
+
+			while exist:
+
+				os.system("cls"), print()
+				bakery = input("Name your bakery (leave blank to randomize): ")
+
+				if f"CC_{'_'.join(bakery.split())}_save_file.txt" in os.listdir(os.getcwd()):
+
+					os.system("cls"), print()
+					replace = input(f"A save file for bakery '{bakery}' already exists, do you want to replace your progress? (y / n): ")
+
+					while replace.lower().rstrip().lstrip() not in ["y", "yes", "n", "no"]:
+
+						os.system("cls"), print()
+						replace = input("Do you want to replace your progress? (y / n): ")
+
+					if replace.lower().lstrip().rstrip() in ["y", "yes"]:
+
+						exist = False
+						break
+
+					else:
+
+						os.system("cls"), print()
+						again = input("Try another bakery name? (y / n): ")
+
+						while again.lower().rstrip().lstrip() not in ["y", "yes", "n", "no"]:
+
+							os.system("cls"), print()
+							again = input("Try another bakery name? (y / n): ")
+
+						if again.lower().lstrip().rstrip() in ["n", "no"]:
+
+							bakery = ""
+							exist = False
+							break
+
+				else:
+
+					exist = False
+					break
+
+			os.chdir(root)
+	
+		else:
+
+			os.system("cls"), print()
+			bakery = input("Name your bakery (leave blank to randomize): ")
 
 	os.system("cls"), print()
 	save_frequency = input("How often (minutes) do you want to save your progress?: ")
@@ -97,12 +187,14 @@ def botManager():
 	WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "langSelect-EN")))
 	language = driver.find_element_by_id("langSelect-EN")
 	driver.execute_script("arguments[0].click();", language)
-	if (backup.lower().lstrip().rstrip() == "n"): driver, bakery = nameBakery(driver, bakery)
-	elif ((backup.lower().lstrip().rstrip() == "y") & f"CC_{bakery}_save_file.txt" in os.listdir(os.getcwd())): driver = loadCheckpoint(driver, bakery)
-	elif ((backup.lower().lstrip().rstrip() == "y") & f"CC_{bakery}_save_file.txt" not in os.listdir(os.getcwd())): print(f"NO SAVE FILE FOUND FOR BAKERY '{bakery}'")
+	WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "prefsButton")))
+	if (backup.lower().lstrip().rstrip() in ["n", "no"]): driver, bakery = nameBakery(driver, bakery, True if replace.lower().lstrip().rstrip() in ["y", "yes"] else False)
+	else: driver = loadCheckpoint(driver, bakery)
+	WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".cc_btn.cc_btn_accept_all")))	
 	got_it = driver.find_elements_by_css_selector(".cc_btn.cc_btn_accept_all")
 	if (len(got_it) > 0): got_it[0].click()
-	driver = saveProgress(driver, bakery)
+	driver = saveProgress(driver, bakery, False)
+	WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "bigCookie")))	
 	cookie = driver.find_element_by_id("bigCookie")
 	start = float(time.time())
 	begin = float(time.time())
@@ -147,7 +239,6 @@ def botManager():
 					elif ((len(unlocked) > 0) & (len(upgrades) > 0)):
 
 						parity = random.randint(0, 1)
-
 						if (parity%2 == 0): driver = purchaseItem(driver, unlocked, strategy.lower().lstrip().rstrip(), "item")
 						else: driver = purchaseItem(driver, upgrades, strategy.lower().lstrip().rstrip(), "upgrade")
 
@@ -168,11 +259,12 @@ def botManager():
 						else: driver = purchaseItem(driver, upgrades, strategy.lower().lstrip().rstrip(), "upgrade")
 
 		end = float(time.time())
-		dt = end - start
+		delta = end - start
 
-		if (dt >= save_interval):
+		if (delta >= save_interval):
 
 			driver = saveProgress(driver, bakery)
+			WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "bigCookie")))
 			start = float(time.time())
 			cookie = driver.find_element_by_id("bigCookie")
 
@@ -193,8 +285,10 @@ def botManager():
 			driver.execute_script("arguments[0].click();", language)
 			WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "bakeryName")))
 			driver = loadCheckpoint(driver, bakery, opened)
+			WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".cc_btn.cc_btn_accept_all")))	
 			got_it = driver.find_elements_by_css_selector(".cc_btn.cc_btn_accept_all")
 			if (len(got_it) > 0): got_it[0].click()
+			WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "bigCookie")))
 			cookie = driver.find_element_by_id("bigCookie")
 
 
