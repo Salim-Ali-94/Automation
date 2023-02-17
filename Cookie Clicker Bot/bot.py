@@ -6,7 +6,7 @@ import time
 import os
 import random
 import keyboard
-from helping import *
+from utility import *
 from constants import *
 
 
@@ -67,7 +67,6 @@ def botManager():
 			time.sleep(10)
 			backup = "no"
 
-	# else:
 	if backup.lower().rstrip().lstrip() in ["n", "no"]:
 
 		if (os.path.isdir("Save Files") == True):
@@ -127,7 +126,7 @@ def botManager():
 	os.system("cls"), print()
 	save_frequency = input("How often (minutes) do you want to save your progress?: ")
 
-	while not save_frequency.lower().rstrip().lstrip().isdigit():
+	while not isNumber(save_frequency.lower().rstrip().lstrip()):
 
 		os.system("cls"), print()
 		save_frequency = input("How often (minutes) do you want to save your progress?: ")
@@ -184,17 +183,17 @@ def botManager():
 	driver = initializeDriver()
 	driver.maximize_window()
 	driver.get(URL)
-	WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "langSelect-EN")))
+	WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "langSelect-EN")))
 	language = driver.find_element_by_id("langSelect-EN")
 	driver.execute_script("arguments[0].click();", language)
-	WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "prefsButton")))
+	WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "prefsButton")))
 	if (backup.lower().lstrip().rstrip() in ["n", "no"]): driver, bakery = nameBakery(driver, bakery, True if replace.lower().lstrip().rstrip() in ["y", "yes"] else False)
 	else: driver = loadCheckpoint(driver, bakery)
-	WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".cc_btn.cc_btn_accept_all")))	
+	WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".cc_btn.cc_btn_accept_all")))	
 	got_it = driver.find_elements_by_css_selector(".cc_btn.cc_btn_accept_all")
 	if (len(got_it) > 0): got_it[0].click()
 	driver = saveProgress(driver, bakery, False)
-	WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "bigCookie")))	
+	WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "bigCookie")))	
 	cookie = driver.find_element_by_id("bigCookie")
 	start = float(time.time())
 	begin = float(time.time())
@@ -211,7 +210,7 @@ def botManager():
 		if (len(golden_cookie) > 0): 
 
 			golden_cookie = []
-			WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".shimmer"))).click()
+			WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".shimmer"))).click()
 			print("You found a golden cookie!")
 
 		if (strategy.lower().lstrip().rstrip() == "a"):
@@ -264,31 +263,33 @@ def botManager():
 		if (delta >= save_interval):
 
 			driver = saveProgress(driver, bakery)
-			WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "bigCookie")))
+			WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "bigCookie")))
 			start = float(time.time())
 			cookie = driver.find_element_by_id("bigCookie")
 
 		if keyboard.is_pressed("x"):
 
 			driver.quit()
+			print("\nShutting down...\n")
 			break
 
 		elif ((opened == True) and keyboard.is_pressed("esc")):
 
 			driver.quit()
+			print("\nActivating autopilot mode...\n")
 			opened = False
 			driver = initializeDriver(True)
 			driver.get(URL)
 			driver.maximize_window()
-			WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "langSelect-EN")))
+			WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "langSelect-EN")))
 			language = driver.find_element_by_id("langSelect-EN")
 			driver.execute_script("arguments[0].click();", language)
-			WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "bakeryName")))
+			WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "bakeryName")))
 			driver = loadCheckpoint(driver, bakery, opened)
-			WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".cc_btn.cc_btn_accept_all")))	
+			WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".cc_btn.cc_btn_accept_all")))
 			got_it = driver.find_elements_by_css_selector(".cc_btn.cc_btn_accept_all")
 			if (len(got_it) > 0): got_it[0].click()
-			WebDriverWait(driver, timeout = 30).until(EC.visibility_of_element_located((By.ID, "bigCookie")))
+			WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.ID, "bigCookie")))
 			cookie = driver.find_element_by_id("bigCookie")
 
 
