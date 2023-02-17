@@ -268,14 +268,14 @@ def botManager():
 
 		if keyboard.is_pressed("x"):
 
-			driver.quit()
 			print("\nShutting down...\n")
+			driver.quit()
 			break
 
 		elif ((opened == True) and keyboard.is_pressed("esc")):
 
-			driver.quit()
 			print("\nActivating ninja mode...\n")
+			driver.quit()
 			opened = False
 			driver = initializeDriver(True)
 			driver.get(URL)
