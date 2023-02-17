@@ -55,7 +55,6 @@ def botManager():
 					if again.lower().lstrip().rstrip() in ["n", "no"]:
 
 						backup = "no"
-						# bakery = ""
 						break
 
 			os.chdir(root)
@@ -276,7 +275,7 @@ def botManager():
 		elif ((opened == True) and keyboard.is_pressed("esc")):
 
 			driver.quit()
-			print("\nActivating autopilot mode...\n")
+			print("\nActivating ninja mode...\n")
 			opened = False
 			driver = initializeDriver(True)
 			driver.get(URL)
