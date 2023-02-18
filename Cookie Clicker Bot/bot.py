@@ -176,8 +176,8 @@ def botManager():
 		os.system("cls"), print()
 		speed = input("Please specify a click rate for the bot (clicks per second): ")
 
-	period = 1 / int(speed)
-	save_interval = float(save_frequency)*60
+	period = 1 / abs(int(speed.lower().rstrip().lstrip()))
+	save_interval = abs(float(save_frequency))*60
 	os.system("cls"), print()
 	driver = initializeDriver()
 	driver.maximize_window()
@@ -229,7 +229,7 @@ def botManager():
 				stop = float(time.time())
 				t = stop - begin
 
-				if (t >= float(delay)*60):
+				if (t >= abs(float(delay))*60):
 
 					if ((len(unlocked) > 0) & (len(upgrades) == 0)): driver = purchaseItem(driver, unlocked, strategy.lower().lstrip().rstrip(), "item")
 					elif ((len(upgrades) > 0) & (len(unlocked) == 0)): driver = purchaseItem(driver, upgrades, strategy.lower().lstrip().rstrip(), "upgrade")
