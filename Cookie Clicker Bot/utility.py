@@ -23,8 +23,17 @@ def saveProgress(browser, shop, info = True):
 	os.chdir("Save Files")
 	options = browser.find_element_by_id("prefsButton")
 	browser.execute_script("arguments[0].click();", options)
-	export = browser.find_element_by_link_text("Export save")
-	browser.execute_script("arguments[0].click();", export)
+
+	try:
+
+		export = browser.find_element_by_link_text("Export save")
+		browser.execute_script("arguments[0].click();", export)
+
+	except:
+
+		export = browser.find_element_by_link_text("Export save")
+		browser.execute_script("arguments[0].click();", export)
+
 	tag = browser.find_element_by_id("textareaPrompt")
 	with open(f"CC_{'_'.join(shop.split())}_save_file.txt", "w") as file: file.write(f"{tag.text}")
 	done = browser.find_element_by_id("promptOption0")
@@ -42,7 +51,7 @@ def saveProgress(browser, shop, info = True):
 	os.chdir(root)
 	return browser
 
-def loadCheckpoint(browser, shop, opened = True):
+def loadCheckpoint(browser, shop, opened = True, info = True):
 
 	root = os.getcwd()
 
@@ -66,22 +75,41 @@ def loadCheckpoint(browser, shop, opened = True):
 
 			if not opened:
 
-				volume = browser.find_element_by_id("volumeSlider")
-				browser.execute_script("arguments[0].setAttribute('value', 0)", volume)
-				browser.execute_script("arguments[0].dispatchEvent(new Event('change'))", volume)
+				try:
+
+					volume = browser.find_element_by_id("volumeSlider")
+					browser.execute_script("arguments[0].setAttribute('value', 0)", volume)
+					browser.execute_script("arguments[0].dispatchEvent(new Event('change'))", volume)
+
+				except:
+
+					volume = browser.find_element_by_id("volumeSlider")
+					browser.execute_script("arguments[0].setAttribute('value', 0)", volume)
+					browser.execute_script("arguments[0].dispatchEvent(new Event('change'))", volume)
 
 			else:
 
-				volume = browser.find_element_by_id("volumeSlider")
-				browser.execute_script("arguments[0].setAttribute('value', 75)", volume)
-				browser.execute_script("arguments[0].dispatchEvent(new Event('change'))", volume)
+				try:
+
+					volume = browser.find_element_by_id("volumeSlider")
+					browser.execute_script("arguments[0].setAttribute('value', 75)", volume)
+					browser.execute_script("arguments[0].dispatchEvent(new Event('change'))", volume)
+
+				except:
+					
+					volume = browser.find_element_by_id("volumeSlider")
+					browser.execute_script("arguments[0].setAttribute('value', 75)", volume)
+					browser.execute_script("arguments[0].dispatchEvent(new Event('change'))", volume)
 
 			options = browser.find_element_by_id("prefsButton")
 			browser.execute_script("arguments[0].click();", options)
 			browser, stats = getStats(browser)
-			print(f"\nLoaded latest checkpoint for {shop} with the following stats:\n")
-			for stat in stats: print(f"\t{stat}: {stats[stat]}")
-			print()
+
+			if (info == True):
+
+				print(f"\nLoaded latest checkpoint for {shop} with the following stats:\n")
+				for stat in stats: print(f"\t{stat}: {stats[stat]}")
+				print()
 
 		else:
 		
@@ -181,7 +209,7 @@ def nameBakery(browser, shop, replace = False):
 	os.chdir(root)
 	return browser, shop
 
-def purchaseItem(browser, inventory, strategy, category):
+def purchaseItem(browser, inventory, strategy, category, info = True):
 
 	try:
 
@@ -222,7 +250,7 @@ def purchaseItem(browser, inventory, strategy, category):
 			if (category == "item"): buy_text = buy.text.split()[0:-2 if (len(buy.text.split()) >= 3) else -1]
 			else: buy_text = selection.split()
 			browser.execute_script("arguments[0].click();", buy)
-			print(f"You bought the {' '.join(buy_text)} {category}")
+			if (info == True): print(f"You bought the {' '.join(buy_text)} {category}")
 
 			if (category == "item"):
 
@@ -248,7 +276,7 @@ def purchaseItem(browser, inventory, strategy, category):
 			if (category == "item"): buy_text = buy.text.split()[0:-2 if (len(buy.text.split()) >= 3) else -1]
 			else: buy_text = selection.text.split()
 			browser.execute_script("arguments[0].click();", buy)
-			print(f"You bought the {' '.join(buy_text)} {category}")
+			if (info == True): print(f"You bought the {' '.join(buy_text)} {category}")
 			return browser
 
 	except Exception as error:
